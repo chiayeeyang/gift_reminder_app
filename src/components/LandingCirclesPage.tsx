@@ -7,12 +7,10 @@ import {
   Sparkles,
   Plus,
   Filter,
-  Flame,
   Info,
   Search,
   Zap,
   RotateCcw,
-  Gift,
   HelpCircle,
 } from 'lucide-react';
 
@@ -50,15 +48,25 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
   const [selectedRelation, setSelectedRelation] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredPersonId, setHoveredPersonId] = useState<string | null>(null);
-  const [collisionCount, setCollisionCount] = useState(0);
+
+  // Measured arena dimensions in state so React re-renders adaptive avatar sizes
+  const [arenaDimensions, setArenaDimensions] = useState<{ width: number; height: number }>({
+    width: typeof window !== 'undefined' ? Math.min(window.innerWidth - 24, 950) : 800,
+    height: typeof window !== 'undefined' && window.innerWidth < 640 ? 460 : 600,
+  });
 
   // Screen container and physics refs
   const containerRef = useRef<HTMLDivElement | null>(null);
   const circleElementsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const physicsCirclesRef = useRef<PhysicsCircle[]>([]);
-  const containerSizeRef = useRef<{ width: number; height: number }>({ width: 900, height: 620 });
+  const containerSizeRef = useRef<{ width: number; height: number }>({
+    width: typeof window !== 'undefined' ? Math.min(window.innerWidth - 24, 950) : 800,
+    height: typeof window !== 'undefined' && window.innerWidth < 640 ? 460 : 600,
+  });
   const animationFrameRef = useRef<number | null>(null);
-  const mouseRef = useRef<{
+
+  // Pointer / Touch tracking
+  const pointerRef = useRef<{
     x: number;
     y: number;
     vx: number;
@@ -78,44 +86,57 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
 
   const draggedCircleRef = useRef<PhysicsCircle | null>(null);
 
-  // Month names
-  const monthNames = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
+  // Calculate dynamic radius responsive to screen width
+  const getResponsiveRadius = useCallback((daysUntil: number, containerWidth: number): number => {
+    // Phone screen (< 500px): Small compact avatars so 5-10 people have generous room to move around
+    if (containerWidth < 500) {
+      if (daysUntil === 0) return 32;       // 64px diameter
+      if (daysUntil <= 7) return 29;        // 58px diameter
+      if (daysUntil <= 14) return 26;       // 52px diameter
+      if (daysUntil <= 35) return 23;       // 46px diameter
+      if (daysUntil <= 90) return 21;       // 42px diameter
+      return 19;                           // 38px diameter
+    }
+
+    // Tablet screen (500px to 800px)
+    if (containerWidth < 800) {
+      if (daysUntil === 0) return 44;       // 88px diameter
+      if (daysUntil <= 7) return 40;        // 80px diameter
+      if (daysUntil <= 14) return 36;       // 72px diameter
+      if (daysUntil <= 35) return 32;       // 64px diameter
+      if (daysUntil <= 90) return 28;       // 56px diameter
+      return 25;                           // 50px diameter
+    }
+
+    // Desktop screen (>= 800px)
+    if (daysUntil === 0) return 56;         // 112px diameter
+    if (daysUntil <= 7) return 50;          // 100px diameter
+    if (daysUntil <= 14) return 44;         // 88px diameter
+    if (daysUntil <= 35) return 38;         // 76px diameter
+    if (daysUntil <= 90) return 33;         // 66px diameter
+    return 29;                             // 58px diameter
+  }, []);
 
   // Calculate days until birthday and radius for each person
   const peopleWithProximity = useMemo(() => {
+    const width = arenaDimensions.width || 600;
+
     return people.map((person) => {
       const { days } = calculateDaysUntil(person.birthMonth, person.birthDay);
+      const radius = getResponsiveRadius(days, width);
 
-      // Circle radius based on birthday proximity:
-      // Today: r = 88px (diameter 176px)
-      // <= 7 days: r = 82px (diameter 164px)
-      // <= 14 days: r = 74px (diameter 148px)
-      // <= 35 days: r = 66px (diameter 132px)
-      // <= 90 days: r = 58px (diameter 116px)
-      // > 90 days: r = 48px to 54px
-      let radius = 50;
       let urgencyTier: 'today' | 'urgent' | 'soon' | 'upcoming' | 'later' = 'later';
-
       if (days === 0) {
-        radius = 88;
         urgencyTier = 'today';
       } else if (days <= 7) {
-        radius = 82;
         urgencyTier = 'urgent';
       } else if (days <= 14) {
-        radius = 74;
         urgencyTier = 'urgent';
       } else if (days <= 35) {
-        radius = 66;
         urgencyTier = 'soon';
       } else if (days <= 90) {
-        radius = 58;
         urgencyTier = 'upcoming';
       } else {
-        radius = Math.max(46, Math.round(54 - (days / 365) * 8));
         urgencyTier = 'later';
       }
 
@@ -129,7 +150,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         giftCount: personGifts.length,
       };
     });
-  }, [people, gifts]);
+  }, [people, gifts, arenaDimensions.width, getResponsiveRadius]);
 
   // Filtered people
   const filteredPeople = useMemo(() => {
@@ -153,56 +174,55 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
     const currentList = physicsCirclesRef.current;
     const newCircles: PhysicsCircle[] = [];
 
-    // Scale radii if on smaller screen
-    const scaleFactor = Math.min(1, Math.max(0.75, width / 950));
-
     filteredPeople.forEach((person, index) => {
       const existing = currentList.find((c) => c.id === person.id);
-      const scaledRadius = Math.round(person.radius * scaleFactor);
+      const targetRadius = person.radius;
 
       if (existing) {
         // Keep current position and velocity, update metadata and radius
         newCircles.push({
           ...existing,
           person,
-          radius: scaledRadius,
-          mass: (scaledRadius * scaledRadius) / 1000,
+          radius: targetRadius,
+          mass: (targetRadius * targetRadius) / 600,
           daysUntil: person.daysUntil,
           urgencyTier: person.urgencyTier,
           giftCount: person.giftCount,
         });
       } else {
-        // Place new circle gracefully in grid/spiral inside container
+        // Place new circle gracefully in grid inside container
         const total = filteredPeople.length;
-        const cols = Math.ceil(Math.sqrt(total * 1.5)) || 1;
+        const cols = Math.ceil(Math.sqrt(total * 1.3)) || 1;
         const col = index % cols;
         const row = Math.floor(index / cols);
 
-        const cellW = (width - 120) / Math.max(1, cols);
-        const cellH = (height - 120) / Math.max(1, Math.ceil(total / cols));
+        const padX = Math.min(30, width * 0.08);
+        const padY = Math.min(30, height * 0.08);
+        const cellW = (width - padX * 2) / Math.max(1, cols);
+        const cellH = (height - padY * 2) / Math.max(1, Math.ceil(total / cols));
 
         const initX = Math.min(
-          Math.max(scaledRadius + 10, 60 + col * cellW + (cellW / 2) + (Math.random() * 20 - 10)),
-          width - scaledRadius - 10
+          Math.max(targetRadius + 6, padX + col * cellW + cellW / 2 + (Math.random() * 16 - 8)),
+          width - targetRadius - 6
         );
         const initY = Math.min(
-          Math.max(scaledRadius + 10, 60 + row * cellH + (cellH / 2) + (Math.random() * 20 - 10)),
-          height - scaledRadius - 10
+          Math.max(targetRadius + 6, padY + row * cellH + cellH / 2 + (Math.random() * 16 - 8)),
+          height - targetRadius - 6
         );
 
         // Gentle random initial velocity
         const angle = Math.random() * Math.PI * 2;
-        const speed = 0.5 + Math.random() * 0.6;
+        const speed = 0.6 + Math.random() * 0.6;
 
         newCircles.push({
           id: person.id,
           person,
-          radius: scaledRadius,
+          radius: targetRadius,
           x: initX,
           y: initY,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          mass: (scaledRadius * scaledRadius) / 1000,
+          mass: (targetRadius * targetRadius) / 600,
           isHovered: false,
           daysUntil: person.daysUntil,
           urgencyTier: person.urgencyTier,
@@ -219,7 +239,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
     physicsCirclesRef.current = newCircles;
   }, [filteredPeople]);
 
-  // Observe container size
+  // Observe container size with ResizeObserver for live mobile orientation/viewport responsiveness
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -228,9 +248,14 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         const { width, height } = entry.contentRect;
         if (width > 0 && height > 0) {
           containerSizeRef.current = { width, height };
+          setArenaDimensions({ width, height });
 
-          // Keep all circles strictly within bounds when container resizes
+          // Keep all circles strictly within bounds and update radii immediately
           physicsCirclesRef.current.forEach((c) => {
+            const newRadius = getResponsiveRadius(c.daysUntil, width);
+            c.radius = newRadius;
+            c.mass = (newRadius * newRadius) / 600;
+
             if (c.x - c.radius < 0) c.x = c.radius + 2;
             if (c.x + c.radius > width) c.x = width - c.radius - 2;
             if (c.y - c.radius < 0) c.y = c.radius + 2;
@@ -242,7 +267,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
 
     observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [getResponsiveRadius]);
 
   // Main 60fps Physics & Collision Engine
   useEffect(() => {
@@ -255,38 +280,40 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
 
       const { width, height } = containerSizeRef.current;
       const circles = physicsCirclesRef.current;
-      const mouse = mouseRef.current;
+      const pointer = pointerRef.current;
 
-      // Update mouse velocity
-      if (mouse.isInside && mouse.prevX > -500) {
-        mouse.vx = (mouse.x - mouse.prevX) * 0.3;
-        mouse.vy = (mouse.y - mouse.prevY) * 0.3;
+      // Update pointer velocity
+      if (pointer.isInside && pointer.prevX > -500) {
+        pointer.vx = (pointer.x - pointer.prevX) * 0.4;
+        pointer.vy = (pointer.y - pointer.prevY) * 0.4;
       } else {
-        mouse.vx = 0;
-        mouse.vy = 0;
+        pointer.vx = 0;
+        pointer.vy = 0;
       }
-      mouse.prevX = mouse.x;
-      mouse.prevY = mouse.y;
+      pointer.prevX = pointer.x;
+      pointer.prevY = pointer.y;
 
-      // 1. Mouse Interaction / Hover impulse
-      if (mouse.isInside && !draggedCircleRef.current) {
+      // 1. Pointer Interaction / Hover / Touch Impulse
+      if (pointer.isInside && !draggedCircleRef.current) {
         for (let i = 0; i < circles.length; i++) {
           const c = circles[i];
-          const mdx = c.x - mouse.x;
-          const mdy = c.y - mouse.y;
+          const mdx = c.x - pointer.x;
+          const mdy = c.y - pointer.y;
           const mdist = Math.hypot(mdx, mdy);
 
-          // If hovering over circle or within touch boundary
-          if (mdist < c.radius + 16) {
+          // Interaction boundary: larger on mobile touch for easy interaction
+          const interactDist = c.radius + (width < 500 ? 24 : 18);
+
+          if (mdist < interactDist) {
             c.isHovered = true;
 
-            // Apply push impulse away from mouse (or along mouse direction if cursor moving fast)
+            // Apply push impulse away from finger/mouse
             const pushDirX = mdist > 0.001 ? mdx / mdist : 1;
             const pushDirY = mdist > 0.001 ? mdy / mdist : 0;
-            const pushStrength = Math.min(4.5, (c.radius + 16 - mdist) * 0.18 + 1.2);
+            const pushStrength = Math.min(4.8, (interactDist - mdist) * 0.2 + 1.0);
 
-            c.vx += (pushDirX * pushStrength + mouse.vx * 0.4) * dt;
-            c.vy += (pushDirY * pushStrength + mouse.vy * 0.4) * dt;
+            c.vx += (pushDirX * pushStrength + pointer.vx * 0.4) * dt;
+            c.vy += (pushDirY * pushStrength + pointer.vy * 0.4) * dt;
           } else {
             c.isHovered = false;
           }
@@ -310,7 +337,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
             const ny = dy / dist;
             const overlap = minDist - dist;
 
-            // Separate circles to prevent overlapping
+            // Separate circles smoothly
             const totalMass = c1.mass + c2.mass;
             const m1Ratio = c2.mass / totalMass;
             const m2Ratio = c1.mass / totalMass;
@@ -329,10 +356,9 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
             const dvy = c2.vy - c1.vy;
             const velAlongNormal = dvx * nx + dvy * ny;
 
-            // Only bounce if they are moving towards each other
+            // Bounce when moving towards each other
             if (velAlongNormal < 0) {
-              // High elasticity (0.92) for delightful bouncy reaction
-              const restitution = 0.92;
+              const restitution = 0.9;
               const impulse = -(1 + restitution) * velAlongNormal / (1 / c1.mass + 1 / c2.mass);
 
               if (!c1.isDragging) {
@@ -344,14 +370,8 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                 c2.vy += (impulse / c2.mass) * ny;
               }
 
-              // Visual collision energy
               c1.collisionEnergy = 1.0;
               c2.collisionEnergy = 1.0;
-
-              // Occasional subtle count tick for feedback
-              if (Math.random() < 0.1) {
-                setCollisionCount((prev) => (prev + 1) % 9999);
-              }
             }
           }
         }
@@ -368,45 +388,45 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         if (c.x - c.radius < 0) {
           c.x = c.radius;
           c.vx = Math.abs(c.vx) * wallRestitution;
-          c.collisionEnergy = 0.7;
+          c.collisionEnergy = 0.6;
         }
         // Right wall
         if (c.x + c.radius > width) {
           c.x = width - c.radius;
           c.vx = -Math.abs(c.vx) * wallRestitution;
-          c.collisionEnergy = 0.7;
+          c.collisionEnergy = 0.6;
         }
         // Top wall
         if (c.y - c.radius < 0) {
           c.y = c.radius;
           c.vy = Math.abs(c.vy) * wallRestitution;
-          c.collisionEnergy = 0.7;
+          c.collisionEnergy = 0.6;
         }
         // Bottom wall
         if (c.y + c.radius > height) {
           c.y = height - c.radius;
           c.vy = -Math.abs(c.vy) * wallRestitution;
-          c.collisionEnergy = 0.7;
+          c.collisionEnergy = 0.6;
         }
 
-        // Damping / Friction
-        c.vx *= Math.pow(0.994, dt);
-        c.vy *= Math.pow(0.994, dt);
+        // Damping / Air resistance
+        c.vx *= Math.pow(0.992, dt);
+        c.vy *= Math.pow(0.992, dt);
 
         // Speed clamping
         const speed = Math.hypot(c.vx, c.vy);
-        const maxSpeed = 12.0;
+        const maxSpeed = width < 500 ? 9.0 : 12.0;
         if (speed > maxSpeed) {
           c.vx = (c.vx / speed) * maxSpeed;
           c.vy = (c.vy / speed) * maxSpeed;
         }
 
-        // Gentle buoyancy / ambient drift (never completely freeze)
-        const minSpeed = 0.35;
+        // Ambient gentle buoyancy (they wander freely across the arena)
+        const minSpeed = width < 500 ? 0.3 : 0.4;
         if (speed < minSpeed) {
           const driftAngle = (c.id.charCodeAt(0) * 0.7 + now * 0.0003) % (Math.PI * 2);
-          c.vx += Math.cos(driftAngle) * 0.08 * dt;
-          c.vy += Math.sin(driftAngle) * 0.08 * dt;
+          c.vx += Math.cos(driftAngle) * 0.07 * dt;
+          c.vy += Math.sin(driftAngle) * 0.07 * dt;
         }
 
         // Update position
@@ -419,19 +439,17 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         }
       }
 
-      // 4. Update DOM transforms directly for 60/120fps GPU performance
+      // 4. Update DOM transforms directly for GPU-accelerated rendering
       for (let i = 0; i < circles.length; i++) {
         const c = circles[i];
         const el = circleElementsRef.current.get(c.id);
         if (el) {
-          // Centered translate
           const left = c.x - c.radius;
           const top = c.y - c.radius;
           el.style.transform = `translate3d(${left}px, ${top}px, 0)`;
 
-          // Subtle collision squish/ripple feedback
           if (c.collisionEnergy > 0.3) {
-            el.style.filter = `drop-shadow(0 0 ${Math.round(c.collisionEnergy * 8)}px ${c.person.avatarColor}99)`;
+            el.style.filter = `drop-shadow(0 0 ${Math.round(c.collisionEnergy * 6)}px ${c.person.avatarColor}99)`;
           } else {
             el.style.filter = '';
           }
@@ -454,69 +472,79 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
     const circles = physicsCirclesRef.current;
     circles.forEach((c) => {
       const angle = Math.random() * Math.PI * 2;
-      const boost = 3.5 + Math.random() * 4.5;
+      const boost = 3.5 + Math.random() * 4.0;
       c.vx += Math.cos(angle) * boost;
       c.vy += Math.sin(angle) * boost;
       c.collisionEnergy = 1.0;
     });
   }, []);
 
-  // Reset positions gently inside the screen container
+  // Reset positions nicely spaced inside the container
   const handleResetPositions = useCallback(() => {
     const { width, height } = containerSizeRef.current;
     const circles = physicsCirclesRef.current;
     const count = circles.length;
-    const cols = Math.ceil(Math.sqrt(count * 1.5)) || 1;
+    const cols = Math.ceil(Math.sqrt(count * 1.3)) || 1;
     const rows = Math.ceil(count / cols);
 
-    const cellW = (width - 120) / cols;
-    const cellH = (height - 120) / rows;
+    const padX = Math.min(30, width * 0.08);
+    const padY = Math.min(30, height * 0.08);
+    const cellW = (width - padX * 2) / cols;
+    const cellH = (height - padY * 2) / rows;
 
     circles.forEach((c, idx) => {
       const col = idx % cols;
       const row = Math.floor(idx / cols);
-      c.x = 60 + col * cellW + cellW / 2;
-      c.y = 60 + row * cellH + cellH / 2;
+      c.x = padX + col * cellW + cellW / 2;
+      c.y = padY + row * cellH + cellH / 2;
       const angle = Math.random() * Math.PI * 2;
       c.vx = Math.cos(angle) * 1.2;
       c.vy = Math.sin(angle) * 1.2;
     });
   }, []);
 
-  // Mouse / Touch handlers for the screen container
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
+  // Pointer / Touch handlers supporting both touch and mouse seamlessly
+  const getPointerCoordinates = (e: React.PointerEvent) => {
+    if (!containerRef.current) return { x: 0, y: 0 };
     const rect = containerRef.current.getBoundingClientRect();
-    const clientX = e.clientX - rect.left;
-    const clientY = e.clientY - rect.top;
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+  };
 
-    mouseRef.current.x = clientX;
-    mouseRef.current.y = clientY;
-    mouseRef.current.isInside = true;
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const { x, y } = getPointerCoordinates(e);
 
-    // Handle active drag if dragging a circle
+    pointerRef.current.x = x;
+    pointerRef.current.y = y;
+    pointerRef.current.isInside = true;
+
+    // Handle active drag if dragging an avatar
     if (draggedCircleRef.current) {
       const circle = draggedCircleRef.current;
-      const dx = clientX - circle.dragStartX;
-      const dy = clientY - circle.dragStartY;
-      if (Math.hypot(dx, dy) > 6) {
+      const dx = x - circle.dragStartX;
+      const dy = y - circle.dragStartY;
+      if (Math.hypot(dx, dy) > 5) {
         circle.hasMovedDuringDrag = true;
       }
-      circle.x = Math.max(circle.radius, Math.min(containerSizeRef.current.width - circle.radius, clientX));
-      circle.y = Math.max(circle.radius, Math.min(containerSizeRef.current.height - circle.radius, clientY));
-      circle.vx = mouseRef.current.vx * 1.2;
-      circle.vy = mouseRef.current.vy * 1.2;
+      const { width, height } = containerSizeRef.current;
+      circle.x = Math.max(circle.radius, Math.min(width - circle.radius, x));
+      circle.y = Math.max(circle.radius, Math.min(height - circle.radius, y));
+      // Give realistic release/throw velocity
+      circle.vx = pointerRef.current.vx * 1.2;
+      circle.vy = pointerRef.current.vy * 1.2;
     }
   };
 
-  const handleMouseEnter = () => {
-    mouseRef.current.isInside = true;
+  const handlePointerEnter = () => {
+    pointerRef.current.isInside = true;
   };
 
-  const handleMouseLeave = () => {
-    mouseRef.current.isInside = false;
-    mouseRef.current.x = -1000;
-    mouseRef.current.y = -1000;
+  const handlePointerLeave = () => {
+    pointerRef.current.isInside = false;
+    pointerRef.current.x = -1000;
+    pointerRef.current.y = -1000;
     setHoveredPersonId(null);
     if (draggedCircleRef.current) {
       draggedCircleRef.current.isDragging = false;
@@ -524,22 +552,38 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
     }
   };
 
-  // Drag initiation on a circle
-  const handleCircleMouseDown = (
-    e: React.MouseEvent<HTMLDivElement>,
+  const handlePointerUp = () => {
+    if (draggedCircleRef.current) {
+      const circle = draggedCircleRef.current;
+      const wasDragging = circle.hasMovedDuringDrag;
+      circle.isDragging = false;
+      draggedCircleRef.current = null;
+
+      // If user tapped cleanly without dragging, open dossier!
+      if (!wasDragging) {
+        onSelectPerson(circle.person);
+      }
+    }
+  };
+
+  // Drag initiation on a circle avatar with pointer capture
+  const handleCirclePointerDown = (
+    e: React.PointerEvent<HTMLDivElement>,
     personId: string
   ) => {
     e.stopPropagation();
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const clientX = e.clientX - rect.left;
-    const clientY = e.clientY - rect.top;
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    } catch {
+      // Graceful fallback
+    }
 
+    const { x, y } = getPointerCoordinates(e);
     const circle = physicsCirclesRef.current.find((c) => c.id === personId);
     if (circle) {
       circle.isDragging = true;
-      circle.dragStartX = clientX;
-      circle.dragStartY = clientY;
+      circle.dragStartX = x;
+      circle.dragStartY = y;
       circle.hasMovedDuringDrag = false;
       circle.vx = 0;
       circle.vy = 0;
@@ -547,40 +591,22 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
     }
   };
 
-  const handleCircleMouseUp = (
-    e: React.MouseEvent<HTMLDivElement>,
-    person: Person
-  ) => {
-    e.stopPropagation();
-    const circle = physicsCirclesRef.current.find((c) => c.id === person.id);
-    if (circle) {
-      const wasDragging = circle.hasMovedDuringDrag;
-      circle.isDragging = false;
-      draggedCircleRef.current = null;
-
-      // If user simply clicked (didn't drag), open person detail drawer!
-      if (!wasDragging) {
-        onSelectPerson(person);
-      }
-    }
-  };
-
   return (
     <div className="relative min-h-[calc(100vh-140px)] flex flex-col justify-between select-none font-pixel">
       {/* Top Controls & Header Bar */}
-      <div className="w-full max-w-6xl mx-auto pt-1 pb-4 px-2 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="w-full max-w-6xl mx-auto pt-1 pb-3 px-2 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-mc text-[#ffffff] mc-text-shadow tracking-wider flex items-center gap-2">
-              <span>PLAYER HEADS & ARENA</span>
+            <h1 className="text-lg sm:text-2xl font-mc text-[#ffffff] mc-text-shadow tracking-wider flex items-center gap-2">
+              <span>PLAYER HEADS ARENA</span>
             </h1>
-            <span className="px-2 py-0.5 bg-[#2b7730] text-[#ffffff] border-2 border-black text-xs font-pixel flex items-center gap-1 shadow-[2px_2px_0_#000000]">
+            <span className="px-1.5 sm:px-2 py-0.5 bg-[#2b7730] text-[#ffffff] border-2 border-black text-[10px] sm:text-xs font-pixel flex items-center gap-1 shadow-[2px_2px_0_#000000]">
               <Sparkles className="w-3 h-3 text-[#55ff55]" />
               PHYSICS LIVE
             </span>
           </div>
-          <p className="text-xs text-[#a3a4ab] mt-1 mc-text-shadow-sm">
-            Each loved one is an 8-bit Minecraft player head block. Closer birthdays have larger avatars and celebratory party helmets. Bounce them around or click to open player gift quests.
+          <p className="text-[11px] sm:text-xs text-[#a3a4ab] mt-0.5 mc-text-shadow-sm">
+            Drag, fling, or tap loved ones to open player gift quests. Closer birthdays wear gold helmets!
           </p>
         </div>
 
@@ -588,7 +614,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={onOpenNewPersonModal}
-            className="mc-button-emerald px-4 py-2 text-xs flex items-center gap-1.5"
+            className="mc-button-emerald px-3 sm:px-4 py-1.5 sm:py-2 text-xs flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4 text-[#a5d6a7]" />
             <span>Spawn Player</span>
@@ -596,14 +622,14 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         </div>
       </div>
 
-      {/* Filter and relationship bar: Minecraft Item Slot Tabs */}
-      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 pb-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[#80ff20] font-mc text-[10px] mr-1 flex items-center gap-1 mc-text-shadow">
+      {/* Filter and relationship bar */}
+      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 pb-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="text-[#80ff20] font-mc text-[9px] sm:text-[10px] mr-1 flex items-center gap-1 mc-text-shadow">
             <Filter className="w-3 h-3 text-[#80ff20]" /> FILTER:
           </span>
           {[
-            { id: 'all', label: '[ALL PLAYERS]' },
+            { id: 'all', label: '[ALL]' },
             { id: 'partner', label: '❤️ Partner' },
             { id: 'family', label: '🏡 Family' },
             { id: 'friend', label: '✨ Friends' },
@@ -612,7 +638,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
             <button
               key={pill.id}
               onClick={() => setSelectedRelation(pill.id)}
-              className={`px-3 py-1.5 text-xs font-pixel border-2 transition-none ${
+              className={`px-2 sm:px-3 py-1 text-xs font-pixel border-2 transition-none ${
                 selectedRelation === pill.id
                   ? 'bg-[#404149] text-[#ffff55] border-white shadow-[inset_2px_2px_0_#626470,inset_-2px_-2px_0_#1e1f24]'
                   : 'mc-button'
@@ -624,27 +650,30 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         </div>
 
         {/* Quick search input */}
-        <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 text-[#888888] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <div className="relative w-full sm:w-56">
+          <Search className="w-3.5 h-3.5 text-[#888888] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search player name..."
+            placeholder="Search player..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8.5 pr-3 py-1.5 mc-input text-xs placeholder-[#777777]"
+            className="w-full pl-7.5 pr-2.5 py-1 mc-input text-xs placeholder-[#777777]"
           />
         </div>
       </div>
 
-      {/* THE MINECRAFT ARENA CONTAINER */}
+      {/* THE MINECRAFT ARENA CONTAINER (Touch & Pointer Enabled) */}
       <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 flex-1 flex flex-col">
         <div
           id="physics-screen-container"
           ref={containerRef}
-          onMouseMove={handleMouseMove}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          className="w-full h-[580px] sm:h-[620px] border-4 border-[#000000] bg-[#161519] shadow-[6px_6px_0_#000000] relative overflow-hidden flex-1 cursor-crosshair select-none"
+          onPointerDown={handlePointerMove}
+          onPointerMove={handlePointerMove}
+          onPointerEnter={handlePointerEnter}
+          onPointerLeave={handlePointerLeave}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          className="w-full h-[460px] sm:h-[540px] lg:h-[620px] border-4 border-[#000000] bg-[#161519] shadow-[6px_6px_0_#000000] relative overflow-hidden flex-1 cursor-crosshair select-none touch-none"
           style={{
             backgroundImage: `
               linear-gradient(45deg, #100f12 25%, transparent 25%), 
@@ -660,29 +689,30 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
           <div className="absolute top-0 inset-x-0 h-1.5 bg-[#3a3b42] border-b border-[#0a0a0c] pointer-events-none z-20" />
 
           {/* Screen Bezel HUD (Top Bar) */}
-          <div className="absolute top-3 inset-x-3 flex items-center justify-between z-20 pointer-events-none">
-            {/* Live Indicator (Minecraft Action Bar) */}
-            <div className="flex items-center gap-2 px-3 py-1.5 mc-panel-dark border-2 border-black text-[#ffffff] text-xs font-pixel shadow-[2px_2px_0_#000000]">
-              <span className="w-2.5 h-2.5 bg-[#55ff55] border border-black animate-pulse" />
-              <span className="mc-text-shadow text-[#80ff20] font-pixel text-xs tracking-wide">
-                ⛏️ ARENA CHUNK ACTIVE • Hover to bounce players
+          <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-20 pointer-events-none">
+            {/* Action Bar status */}
+            <div className="flex items-center gap-1.5 px-2 py-1 mc-panel-dark border-2 border-black text-[#ffffff] text-xs font-pixel shadow-[2px_2px_0_#000000]">
+              <span className="w-2 h-2 bg-[#55ff55] border border-black animate-pulse" />
+              <span className="mc-text-shadow text-[#80ff20] font-pixel text-[10px] sm:text-xs tracking-wide">
+                <span className="hidden sm:inline">⛏️ ARENA ACTIVE • Touch or hover to bounce</span>
+                <span className="sm:hidden">⛏️ ARENA • Tap or fling</span>
               </span>
             </div>
 
             {/* Interactive Screen Controls */}
-            <div className="flex items-center gap-2 pointer-events-auto">
+            <div className="flex items-center gap-1.5 pointer-events-auto">
               <button
                 onClick={handleNudgeAll}
-                className="mc-button-gold px-3 py-1.5 text-xs flex items-center gap-1.5"
+                className="mc-button-gold px-2.5 py-1 text-xs flex items-center gap-1"
                 title="Send a bounce impulse through all players"
               >
                 <Zap className="w-3.5 h-3.5 text-white fill-white" />
-                <span>Nudge All</span>
+                <span className="hidden sm:inline">Nudge</span>
               </button>
 
               <button
                 onClick={handleResetPositions}
-                className="mc-button p-2 text-xs"
+                className="mc-button p-1 text-xs"
                 title="Reset layout"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -690,11 +720,11 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
             </div>
           </div>
 
-          {/* Render All Physics Circles Inside the Screen Container */}
+          {/* Render All Physics Circles with Responsive Diameter */}
           {filteredPeople.map((person) => {
             const isHovered = hoveredPersonId === person.id;
             const diameter = person.radius * 2;
-            const faceSize = Math.max(44, Math.round(diameter * 0.76));
+            const faceSize = Math.max(28, Math.round(diameter * 0.74));
 
             return (
               <div
@@ -707,11 +737,10 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                     circleElementsRef.current.delete(person.id);
                   }
                 }}
-                onMouseEnter={() => setHoveredPersonId(person.id)}
-                onMouseLeave={() => setHoveredPersonId(null)}
-                onMouseDown={(e) => handleCircleMouseDown(e, person.id)}
-                onMouseUp={(e) => handleCircleMouseUp(e, person)}
-                className="absolute top-0 left-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing will-change-transform z-10"
+                onPointerEnter={() => setHoveredPersonId(person.id)}
+                onPointerLeave={() => setHoveredPersonId(null)}
+                onPointerDown={(e) => handleCirclePointerDown(e, person.id)}
+                className="absolute top-0 left-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing will-change-transform z-10 touch-none"
                 style={{
                   width: diameter,
                   height: diameter,
@@ -764,7 +793,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                 </svg>
 
                 {/* THE MINECRAFT 8x8 / 16x16 PLAYER HEAD */}
-                <div className="relative flex items-center justify-center pointer-events-none -mt-1 z-10">
+                <div className="relative flex items-center justify-center pointer-events-none -mt-0.5 z-10">
                   <CuteFace
                     name={person.name}
                     config={person.cuteFace}
@@ -773,16 +802,16 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                   />
                 </div>
 
-                {/* MINECRAFT PLAYER NAMETAG (Dark translucent box with white text + drop shadow) */}
-                <div className="absolute -bottom-3 inset-x-1 flex flex-col items-center justify-center pointer-events-none z-20">
-                  <div className="bg-[#111111]/90 border border-black px-2 py-0.5 shadow-[1px_1px_0_#000000] max-w-[96%] flex items-center gap-1.5">
+                {/* MINECRAFT PLAYER NAMETAG */}
+                <div className="absolute -bottom-2.5 inset-x-0.5 flex flex-col items-center justify-center pointer-events-none z-20">
+                  <div className="bg-[#111111]/90 border border-black px-1.5 py-0.2 shadow-[1px_1px_0_#000000] max-w-[98%] flex items-center gap-1">
                     <span
                       className={`block font-bold text-white mc-text-shadow truncate max-w-full leading-tight font-pixel ${
-                        diameter >= 150
+                        diameter >= 80
                           ? 'text-xs'
-                          : diameter >= 120
-                          ? 'text-[11px]'
-                          : 'text-[10px]'
+                          : diameter >= 54
+                          ? 'text-[10px]'
+                          : 'text-[9px]'
                       }`}
                     >
                       {person.name}
@@ -790,17 +819,15 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
 
                     {/* XP Level / Days Tag */}
                     <span
-                      className={`font-pixel font-bold whitespace-nowrap px-1 py-0.2 border border-black ${
+                      className={`font-pixel font-bold whitespace-nowrap px-0.5 py-0.2 border border-black ${
                         person.daysUntil === 0
                           ? 'bg-[#b71c1c] text-white mc-text-shadow'
                           : person.daysUntil <= 7
                           ? 'bg-[#d97706] text-black'
                           : 'bg-[#2b7730] text-[#55ff55] mc-text-shadow'
-                      } text-[9px]`}
+                      } text-[8px] sm:text-[9px]`}
                     >
-                      {person.daysUntil === 0
-                        ? 'TODAY!'
-                        : `${person.daysUntil}d`}
+                      {person.daysUntil === 0 ? 'TODAY!' : `${person.daysUntil}d`}
                     </span>
                   </div>
                 </div>
@@ -810,11 +837,11 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
 
           {/* Empty state if filtered query yields no results */}
           {filteredPeople.length === 0 && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 pointer-events-auto">
-              <div className="p-6 mc-panel-dark border-2 border-black max-w-sm flex flex-col items-center shadow-[4px_4px_0_#000000]">
-                <HelpCircle className="w-10 h-10 text-[#888888] mb-2" />
-                <p className="text-sm font-bold text-white mc-text-shadow font-mc">NO PLAYERS FOUND</p>
-                <p className="text-xs text-[#a3a4ab] mt-1 font-pixel">
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 pointer-events-auto">
+              <div className="p-5 mc-panel-dark border-2 border-black max-w-xs flex flex-col items-center shadow-[4px_4px_0_#000000]">
+                <HelpCircle className="w-8 h-8 text-[#888888] mb-1.5" />
+                <p className="text-xs sm:text-sm font-bold text-white mc-text-shadow font-mc">NO PLAYERS FOUND</p>
+                <p className="text-[11px] text-[#a3a4ab] mt-1 font-pixel">
                   No entities found in this chunk matching filter.
                 </p>
                 <button
@@ -822,7 +849,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                     setSelectedRelation('all');
                     setSearchQuery('');
                   }}
-                  className="mt-4 mc-button px-4 py-2 text-xs"
+                  className="mt-3 mc-button px-3 py-1.5 text-xs"
                 >
                   [ Clear Filter ]
                 </button>
@@ -833,27 +860,27 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
       </div>
 
       {/* Bottom Legend & Status (Minecraft HUD Style) */}
-      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 pt-3 pb-2 mt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#a3a4ab] border-t-2 border-[#26252b] font-pixel">
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="font-mc text-[10px] text-[#ffffff] flex items-center gap-1 mc-text-shadow">
+      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 pt-2.5 pb-2 mt-1.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#a3a4ab] border-t-2 border-[#26252b] font-pixel">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="font-mc text-[9px] sm:text-[10px] text-[#ffffff] flex items-center gap-1 mc-text-shadow">
             <Info className="w-3.5 h-3.5 text-[#55ffff]" /> CHUNK GUIDE:
           </span>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 bg-[#b71c1c] border border-black inline-block" />
-            <span className="text-white">&lt; 7 days (Crown)</span>
+          <div className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 bg-[#b71c1c] border border-black inline-block" />
+            <span className="text-white text-[11px]">&lt; 7 days (Crown)</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 bg-[#d97706] border border-black inline-block" />
-            <span className="text-white">1–4 weeks (Large)</span>
+          <div className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 bg-[#d97706] border border-black inline-block" />
+            <span className="text-white text-[11px]">1–4 wks (Large)</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 bg-[#2b7730] border border-black inline-block" />
-            <span className="text-white">Upcoming (Standard)</span>
+          <div className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 bg-[#2b7730] border border-black inline-block" />
+            <span className="text-white text-[11px]">Upcoming (Standard)</span>
           </div>
         </div>
 
-        <div className="font-mc text-[10px] text-[#80ff20] mc-text-shadow">
-          {filteredPeople.length} ENTITIES SPAWNED
+        <div className="font-mc text-[9px] sm:text-[10px] text-[#80ff20] mc-text-shadow">
+          {filteredPeople.length} ENTITIES ACTIVE
         </div>
       </div>
     </div>
