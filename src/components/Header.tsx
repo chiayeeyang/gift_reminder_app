@@ -13,7 +13,6 @@ import {
   RotateCcw,
   Menu,
   X,
-  Flame,
   MoreVertical,
   Smile,
 } from 'lucide-react';
@@ -72,69 +71,73 @@ export const Header: React.FC<HeaderProps> = ({
   const navItems = [
     {
       id: 'circles' as ActiveTab,
-      label: 'Birthday Circles',
+      label: 'Player Heads',
       icon: Smile,
     },
     {
       id: 'reminders' as ActiveTab,
-      label: 'Reminders & Events',
+      label: 'Quests & Events',
       icon: Calendar,
-      badge: urgentCount > 0 ? `${urgentCount} urgent` : undefined,
-      badgeColor: 'bg-amber-600 text-white',
+      badge: urgentCount > 0 ? `${urgentCount}!` : undefined,
+      badgeColor: 'bg-[#b71c1c] text-white',
     },
     {
       id: 'gifts' as ActiveTab,
-      label: 'Gift Ideas Vault',
+      label: 'Loot Chest',
       icon: Gift,
       badge: `${gifts.length}`,
-      badgeColor: 'bg-stone-200 text-stone-700',
+      badgeColor: 'bg-[#d97706] text-black',
     },
     {
       id: 'people' as ActiveTab,
-      label: 'Loved Ones & Circles',
+      label: 'Villagers & Friends',
       icon: Users,
     },
     {
       id: 'budget_time' as ActiveTab,
-      label: 'Budget & Time Hub',
+      label: 'Emeralds & XP',
       icon: Clock,
       badge: activeCraftsCount > 0 ? `${activeCraftsCount} DIY` : undefined,
-      badgeColor: 'bg-rose-100 text-rose-800',
+      badgeColor: 'bg-[#2b7730] text-white',
     },
     {
       id: 'ai_studio' as ActiveTab,
-      label: 'AI Gift Studio',
+      label: 'Crafting Table',
       icon: Sparkles,
       highlight: true,
     },
     {
       id: 'shopping_list' as ActiveTab,
-      label: 'Shopping Checklist',
+      label: 'Trade Checklist',
       icon: ShoppingCart,
     },
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-[#fffefb]/95 backdrop-blur-md border-b-2 border-stone-800">
+    <header className="sticky top-0 z-40 bg-[#26252b] border-b-2 border-[#000000] shadow-[0_4px_0_#000000] font-pixel">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top bar: Brand & Action buttons */}
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => onSelectTab('circles')}>
-            <div className="w-10 h-10 rounded-xl bg-[#fed7aa] border-2 border-stone-800 text-stone-900 flex items-center justify-center shadow-[2px_2px_0px_#292524] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5">
-              <Gift className="w-5 h-5 text-stone-900" />
+          <div
+            className="flex items-center gap-3 cursor-pointer select-none"
+            onClick={() => onSelectTab('circles')}
+          >
+            {/* Minecraft Chest Icon Box */}
+            <div className="w-10 h-10 bg-[#8b8b8b] border-2 border-black shadow-[inset_2px_2px_0_#ffffff,inset_-2px_-2px_0_#373737] flex items-center justify-center text-amber-300">
+              <span className="text-xl">🎁</span>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-stone-900 text-base tracking-tight font-serif">
-                  GiftWise
+                <span className="font-mc text-sm sm:text-base text-[#55ff55] mc-text-shadow tracking-wider">
+                  GiftCraft
                 </span>
-                <span className="px-1.5 py-0.2 rounded-xs bg-[#fef08a] border border-stone-800 text-stone-900 text-[10px] font-bold font-sketch tracking-wider">
-                  Sketchbook
+                <span className="px-1.5 py-0.5 bg-[#d97706] border border-black text-[#1c1917] text-[10px] font-bold tracking-wider">
+                  SURVIVAL
                 </span>
               </div>
-              <p className="text-[11px] text-stone-600 font-medium -mt-0.5 font-sketch text-xs">
-                Hand-Drawn Circles, Crafts & Birthday Reminders
+              <p className="text-[11px] text-[#a3a4ab] mc-text-shadow-sm -mt-0.5 font-pixel">
+                Pixel Tracker & Birthday Quests
               </p>
             </div>
           </div>
@@ -143,41 +146,44 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="hidden sm:flex items-center gap-2.5">
             <button
               onClick={onOpenNewGiftModal}
-              className="px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-[#fffefb] border-2 border-stone-900 text-xs font-bold flex items-center gap-1.5 shadow-[2px_2px_0px_#292524] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              className="mc-button-emerald px-3.5 py-2 text-xs flex items-center gap-1.5"
             >
-              <Plus className="w-3.5 h-3.5 text-amber-300" />
-              <span>Add Gift Idea</span>
+              <Plus className="w-3.5 h-3.5 text-[#a5d6a7]" />
+              <span>Craft Gift Idea</span>
             </button>
 
             <button
               onClick={onOpenNewPersonModal}
-              className="px-3.5 py-2 rounded-xl bg-[#fbcfe8] hover:bg-[#f9a8d4] text-stone-900 border-2 border-stone-800 text-xs font-bold flex items-center gap-1.5 shadow-[2px_2px_0px_#292524] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              className="mc-button px-3.5 py-2 text-xs flex items-center gap-1.5"
             >
-              <Users className="w-3.5 h-3.5 text-stone-800" />
-              <span>Add Person</span>
+              <Users className="w-3.5 h-3.5 text-stone-300" />
+              <span>Spawn Player</span>
             </button>
 
             {/* Overflow menu for export/import/reset */}
             <div className="relative">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="p-2 rounded-xl bg-[#fffefb] border-2 border-stone-800 text-stone-800 hover:bg-stone-100 shadow-[1.5px_1.5px_0px_#292524] transition-all"
+                className="mc-button p-2 text-xs"
                 title="Options"
               >
                 <MoreVertical className="w-4 h-4" />
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-[#fffefb] rounded-xl shadow-[4px_4px_0px_#292524] border-2 border-stone-800 py-1.5 text-xs z-50">
+                <div className="absolute right-0 mt-2 w-56 mc-panel-dark border-2 border-black py-2 text-xs z-50 shadow-[4px_4px_0_#000000]">
+                  <div className="px-3 py-1 font-mc text-[9px] text-[#80ff20] border-b border-[#3c3d44] mb-1">
+                    INVENTORY SAVE
+                  </div>
                   <button
                     onClick={() => {
                       exportDataJSON();
                       setDropdownOpen(false);
                     }}
-                    className="w-full text-left px-3.5 py-2 hover:bg-stone-100 flex items-center gap-2 text-stone-800 font-semibold"
+                    className="w-full text-left px-3.5 py-2 hover:bg-[#3c3d44] flex items-center gap-2 text-[#ffffff] font-pixel"
                   >
-                    <Download className="w-3.5 h-3.5 text-stone-600" />
-                    Export Backup (JSON)
+                    <Download className="w-3.5 h-3.5 text-[#55ffff]" />
+                    Export World Save (JSON)
                   </button>
 
                   <button
@@ -185,25 +191,25 @@ export const Header: React.FC<HeaderProps> = ({
                       fileInputRef.current?.click();
                       setDropdownOpen(false);
                     }}
-                    className="w-full text-left px-3.5 py-2 hover:bg-stone-100 flex items-center gap-2 text-stone-800 font-semibold"
+                    className="w-full text-left px-3.5 py-2 hover:bg-[#3c3d44] flex items-center gap-2 text-[#ffffff] font-pixel"
                   >
-                    <Upload className="w-3.5 h-3.5 text-stone-600" />
-                    Import Backup (JSON)
+                    <Upload className="w-3.5 h-3.5 text-[#ffaa00]" />
+                    Import World Save (JSON)
                   </button>
 
-                  <div className="my-1 border-t-2 border-dashed border-stone-200" />
+                  <div className="my-1 border-t border-[#3c3d44]" />
 
                   <button
                     onClick={() => {
-                      if (confirm('Reset to initial sample people & gift ideas?')) {
+                      if (confirm('Reset to initial sample Minecraft players & gift ideas?')) {
                         resetToSampleData();
                       }
                       setDropdownOpen(false);
                     }}
-                    className="w-full text-left px-3.5 py-2 hover:bg-rose-50 flex items-center gap-2 text-rose-700 font-semibold"
+                    className="w-full text-left px-3.5 py-2 hover:bg-[#521313] flex items-center gap-2 text-[#ff5555] font-pixel"
                   >
-                    <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
-                    Reset to Sample Data
+                    <RotateCcw className="w-3.5 h-3.5 text-[#ff5555]" />
+                    Reset to Default World
                   </button>
                 </div>
               )}
@@ -222,22 +228,22 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="sm:hidden flex items-center gap-2">
             <button
               onClick={onOpenNewGiftModal}
-              className="p-2 rounded-xl bg-stone-900 text-amber-300 border-2 border-stone-900 shadow-[1.5px_1.5px_0px_#292524]"
+              className="mc-button-emerald p-2"
               title="Add Gift"
             >
               <Plus className="w-4 h-4" />
             </button>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 text-stone-800 bg-[#fffefb] border-2 border-stone-800 rounded-xl shadow-[1.5px_1.5px_0px_#292524]"
+              className="mc-button p-2"
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Desktop Tabs Navigation */}
-        <nav className="hidden sm:flex items-center gap-1 -mb-px overflow-x-auto pb-1 scrollbar-none">
+        {/* Desktop Tabs Navigation: Minecraft Hotbar Style */}
+        <nav className="hidden sm:flex items-center gap-1.5 -mb-px overflow-x-auto py-2 scrollbar-none">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -246,30 +252,36 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
-                className={`flex items-center gap-2 px-3.5 py-2.5 border-b-3 text-xs font-bold transition-all whitespace-nowrap ${
+                className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-pixel transition-none select-none border-2 ${
                   isActive
-                    ? 'border-stone-900 text-stone-950'
-                    : 'border-transparent text-stone-600 hover:text-stone-900 hover:border-stone-300'
+                    ? 'bg-[#404149] border-[#ffffff] text-[#ffffff] shadow-[inset_2px_2px_0_#5a5b66,inset_-2px_-2px_0_#202126]'
+                    : 'bg-[#1e1d22] border-[#0a0a0c] text-[#a3a4ab] hover:bg-[#2b2a30] hover:text-[#ffffff] hover:border-[#3c3d44]'
                 }`}
               >
                 <Icon
                   className={`w-4 h-4 ${
                     isActive
                       ? item.highlight
-                        ? 'text-amber-600'
-                        : 'text-stone-900'
-                      : 'text-stone-500'
+                        ? 'text-[#55ffff]'
+                        : 'text-[#80ff20]'
+                      : 'text-[#888888]'
                   }`}
                 />
-                <span>{item.label}</span>
+                <span className={isActive ? 'mc-text-shadow font-bold text-white' : ''}>
+                  {item.label}
+                </span>
                 {item.badge && (
                   <span
-                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold border border-stone-800/40 shadow-2xs ${
-                      item.badgeColor || 'bg-[#fffefb] text-stone-800'
+                    className={`px-1.5 py-0.2 border border-black text-[10px] font-bold ${
+                      item.badgeColor || 'bg-[#2b2b2e] text-white'
                     }`}
                   >
                     {item.badge}
                   </span>
+                )}
+                {/* Active selector tick mark */}
+                {isActive && (
+                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#ffffff] rotate-45 border border-black"></span>
                 )}
               </button>
             );
@@ -278,7 +290,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Navigation Drawer */}
         {menuOpen && (
-          <div className="sm:hidden py-3 border-t border-stone-200 space-y-1">
+          <div className="sm:hidden py-3 border-t-2 border-[#000000] bg-[#1a191e] space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -289,8 +301,10 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectTab(item.id);
                     setMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold ${
-                    isActive ? 'bg-stone-900 text-white' : 'text-stone-700 hover:bg-stone-100'
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs font-pixel border-2 ${
+                    isActive
+                      ? 'bg-[#404149] border-[#ffffff] text-[#ffffff]'
+                      : 'bg-[#212026] border-black text-[#a3a4ab]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -298,7 +312,7 @@ export const Header: React.FC<HeaderProps> = ({
                     <span>{item.label}</span>
                   </div>
                   {item.badge && (
-                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-white/20">
+                    <span className="px-1.5 py-0.2 text-[10px] font-bold bg-[#b71c1c] text-white border border-black">
                       {item.badge}
                     </span>
                   )}
@@ -306,24 +320,24 @@ export const Header: React.FC<HeaderProps> = ({
               );
             })}
 
-            <div className="pt-2 border-t border-stone-100 flex items-center justify-around text-xs text-stone-600">
+            <div className="pt-2 border-t-2 border-black flex items-center justify-around text-xs">
               <button
                 onClick={() => {
                   onOpenNewPersonModal();
                   setMenuOpen(false);
                 }}
-                className="py-1.5 px-3 rounded-lg bg-stone-100 font-medium"
+                className="mc-button py-1.5 px-3"
               >
-                + Add Person
+                + Spawn Player
               </button>
               <button
                 onClick={() => {
                   exportDataJSON();
                   setMenuOpen(false);
                 }}
-                className="py-1.5 px-3 rounded-lg bg-stone-100 font-medium"
+                className="mc-button py-1.5 px-3"
               >
-                Export JSON
+                Export World
               </button>
             </div>
           </div>

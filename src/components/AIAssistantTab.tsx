@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGifts } from '../context/GiftContext';
-import { AIGeneratedGiftIdea, GiftType, OccasionType } from '../types';
+import { AIGeneratedGiftIdea, OccasionType } from '../types';
 import { formatCurrency } from '../utils/giftHelpers';
 import {
   Sparkles,
@@ -8,8 +8,6 @@ import {
   Clock,
   Plus,
   Loader2,
-  CheckCircle2,
-  DollarSign,
   AlertCircle,
   Lightbulb,
   Wrench,
@@ -28,7 +26,6 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
   initialRecipientName = '',
   initialRelationship = 'friend',
   initialInterests = '',
-  onSelectGift,
 }) => {
   const { people, addGift } = useGifts();
 
@@ -59,7 +56,6 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
 
   const [isPlanningCraft, setIsPlanningCraft] = useState(false);
   const [craftPlanResult, setCraftPlanResult] = useState<any | null>(null);
-  const [craftPlanError, setCraftPlanError] = useState<string | null>(null);
   const [craftPlanSaved, setCraftPlanSaved] = useState(false);
 
   // When a person is selected from dropdown, autofill
@@ -114,41 +110,40 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
       }
     } catch (err: any) {
       console.error(err);
-      // Helpful fallback in case API key is not yet set up
       setBrainstormError(
         err.message || 'Failed to connect to the AI service. Verify your GEMINI_API_KEY secret.'
       );
-      // Provide high quality instant fallback suggestions
+      // High quality instant fallback suggestions
       setBrainstormResults([
         {
           title: `Curated ${interests ? interests.split(',')[0] : 'Artisanal'} Gift Basket`,
           type: 'bought',
-          description: `A thoughtfully assembled collection celebrating ${recipientName || 'your loved one'}'s love for ${interests || 'quality craftsmanship'}. Include local specialty goods and a heartfelt handwritten letter.`,
+          description: `A thoughtfully assembled collection celebrating ${recipientName || 'your player companion'}'s passion for ${interests || 'rare materials'}. Include specialty provisions and a handwritten parchment scroll.`,
           estimatedCost: Number(budget) || 45,
-          whereToFindOrMake: 'Local artisanal shops, boutique markets, or Etsy',
-          leadTimeAdvice: 'Order 10 days before to arrange custom packaging.',
+          whereToFindOrMake: 'Local trade post, artisanal market, or Etsy',
+          leadTimeAdvice: 'Order 10 days before to package in a decorative wooden chest.',
         },
         {
           title: `Handcrafted Memory Scrapbook & Keepsake Box`,
           type: 'handmade',
-          description: `Collect printed photos of favorite memories, concert tickets, notes, and quotes. Bind with linen cord and pressed botanical leaves.`,
+          description: `Collect printed screenshots and photos of favorite adventures, concert tickets, notes, and quotes. Bind with linen cord and pressed botanical leaves.`,
           estimatedCost: 20,
           craftingHours: 4,
           difficulty: 'Easy',
-          suppliesNeeded: ['Acid-free kraft paper scrapbook', 'Double-sided photo tape', 'Pressed dried flowers', 'Metallic calligraphy pen'],
-          whereToFindOrMake: 'Craft store or stationery supply',
-          leadTimeAdvice: 'Start 2 weeks ahead to print photos and dry flowers.',
+          suppliesNeeded: ['Kraft paper book', 'Double-sided mounting tape', 'Pressed dried flowers', 'Metallic calligraphy ink'],
+          whereToFindOrMake: 'Craft store or stationery outpost',
+          leadTimeAdvice: 'Start 2 weeks ahead to print photos and gather materials.',
         },
         {
-          title: `Personalized Embroidered Linen Tote or Kitchen Apron`,
+          title: `Custom Embroidered Linen Tote or Apron`,
           type: 'handmade',
-          description: `A durable pure linen tote embroidered with their initials, astrological sign, or a tiny custom flower motif.`,
+          description: `A durable pure linen tote embroidered with their player initials, favorite mob icon, or a minimalist flower motif.`,
           estimatedCost: 18,
           craftingHours: 3.5,
           difficulty: 'Medium',
-          suppliesNeeded: ['Heavyweight linen blank', 'DMC embroidery floss', 'Embroidery hoop and needle'],
-          whereToFindOrMake: 'Blank goods from Muji/Amazon, embroidery floss from craft store',
-          leadTimeAdvice: 'Takes about 3-4 hours of relaxed evening stitching.',
+          suppliesNeeded: ['Heavyweight linen blank', 'Embroidery thread skeins', 'Wood hoop and needles'],
+          whereToFindOrMake: 'Textile shop or craft market',
+          leadTimeAdvice: 'Takes about 3-4 hours of relaxed evening crafting.',
         },
       ]);
     } finally {
@@ -181,7 +176,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
       purchased: false,
     }));
 
-    const newGift = addGift({
+    addGift({
       title: idea.title,
       type: idea.type,
       recipientId: matchedPersonId,
@@ -202,7 +197,6 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
   const handleCraftPlannerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsPlanningCraft(true);
-    setCraftPlanError(null);
     setCraftPlanResult(null);
     setCraftPlanSaved(false);
 
@@ -230,28 +224,28 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
         difficulty: craftSkillLevel.includes('Beginner') ? 'Easy' : 'Medium',
         estimatedMaterialCost: 22,
         materialsList: [
-          { name: 'Hardwood blank (basswood or walnut)', approxCost: 10, whereToGet: 'Craft or hardware store' },
-          { name: 'Sloyd whittling knife / safety glove', approxCost: 0, whereToGet: 'Tool box' },
-          { name: 'Assorted sandpaper (120, 220, 400 grit)', approxCost: 5, whereToGet: 'Hardware store' },
-          { name: 'Food-safe organic walnut oil / beeswax polish', approxCost: 7, whereToGet: 'Kitchen or craft shop' },
+          { name: 'Hardwood block (oak or birch wood)', approxCost: 10, whereToGet: 'Craft or lumber depot' },
+          { name: 'Carving whittling knife / leather glove', approxCost: 0, whereToGet: 'Inventory toolbox' },
+          { name: 'Assorted sandpaper sheets (120, 220, 400 grit)', approxCost: 5, whereToGet: 'Hardware trade outpost' },
+          { name: 'Organic beeswax / food-safe sealant', approxCost: 7, whereToGet: 'General supply shop' },
         ],
         timelineSchedule: [
-          { phase: 'Rough Shaping', estimatedDaysBefore: 14, hours: 1.5, task: 'Draw outline template and carve rough profile' },
-          { phase: 'Hollowing & Details', estimatedDaysBefore: 7, hours: 1.5, task: 'Hollow the spoon bowl and taper handle' },
-          { phase: 'Sanding & Finishing', estimatedDaysBefore: 2, hours: 1, task: 'Progressive grit sanding and food-grade oil coat' },
+          { phase: 'Rough Profiling', estimatedDaysBefore: 14, hours: 1.5, task: 'Draw template silhouette and block out main shape' },
+          { phase: 'Detailing & Hollowing', estimatedDaysBefore: 7, hours: 1.5, task: 'Carve bowl recess and taper handle ergonomically' },
+          { phase: 'Sanding & Oil Coat', estimatedDaysBefore: 2, hours: 1, task: 'Fine-grit polishing and protective food-safe oiling' },
         ],
         stepByStep: [
-          'Step 1: Sketch the desired silhouette on top and side planes of wood block.',
-          'Step 2: Carve rough shape using push cuts and stop cuts, always cutting away from hands.',
-          'Step 3: Scoop bowl hollow carefully with spoon gouge or curved knife.',
-          'Step 4: Smooth with 120-grit through 400-grit sandpaper until silky to the touch.',
-          'Step 5: Apply warm organic walnut oil, let soak 20 mins, buff with cloth.',
+          'Step 1: Sketch top and side profile templates on hardwood block.',
+          'Step 2: Rough cut excess wood using stop cuts, always cutting away from body.',
+          'Step 3: Hollow spoon recess carefully using curved knife or gouge.',
+          'Step 4: Smooth thoroughly with 120-grit up to 400-grit sandpaper.',
+          'Step 5: Warm beeswax/oil, buff thoroughly with clean cotton cloth.',
         ],
         proTips: [
-          'Wear a cut-resistant glove on your non-dominant hand.',
-          'Carve along the grain, not against it, to prevent tearout.',
+          'Always carve along the grain to prevent tearout.',
+          'Wear protective cut-resistant gloves on non-dominant hand.',
         ],
-        packagingIdea: 'Wrap with unbleached parchment paper, tied with brown jute twine and a fresh sprig of rosemary.',
+        packagingIdea: 'Pack in a miniature wooden chest tied with green dye ribbon and fresh pine needles.',
       });
     } finally {
       setIsPlanningCraft(false);
@@ -295,59 +289,63 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Mode Switcher */}
-      <div className="flex items-center gap-2 p-1.5 bg-[#fffefb] border-2 border-stone-800 rounded-2xl shadow-[2.5px_2.5px_0px_#292524] w-fit">
+    <div className="space-y-6 font-pixel">
+      {/* Mode Switcher: Minecraft Hotbar Style */}
+      <div className="flex items-center gap-2 p-2 mc-panel border-2 border-black w-fit">
         <button
           onClick={() => setActiveSubMode('brainstorm')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+          className={`px-4 py-2 text-xs font-pixel border-2 transition-none flex items-center gap-1.5 ${
             activeSubMode === 'brainstorm'
-              ? 'bg-[#fef3c7] text-stone-900 border-2 border-stone-800 shadow-[1.5px_1.5px_0px_#292524]'
-              : 'text-stone-700 hover:text-stone-900'
+              ? 'bg-[#d97706] text-black border-white'
+              : 'mc-button'
           }`}
         >
-          <Lightbulb className="w-4 h-4 text-amber-600" />
+          <Lightbulb className="w-4 h-4 text-white" />
           Gift Idea Brainstormer
         </button>
         <button
           onClick={() => setActiveSubMode('craft_planner')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+          className={`px-4 py-2 text-xs font-pixel border-2 transition-none flex items-center gap-1.5 ${
             activeSubMode === 'craft_planner'
-              ? 'bg-[#ffe4e6] text-rose-950 border-2 border-stone-800 shadow-[1.5px_1.5px_0px_#292524]'
-              : 'text-stone-700 hover:text-stone-900'
+              ? 'bg-[#2b7730] text-[#55ff55] border-white'
+              : 'mc-button'
           }`}
         >
-          <Wrench className="w-4 h-4 text-rose-600" />
-          DIY Handmade Project Generator
+          <Wrench className="w-4 h-4 text-[#55ff55]" />
+          DIY Craft Blueprint Generator
         </button>
       </div>
 
       {activeSubMode === 'brainstorm' ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Input Form Column (5 cols) */}
-          <div className="lg:col-span-5 bg-[#fffefb] p-6 rounded-2xl border-2 border-stone-800 shadow-[3.5px_3.5px_0px_#292524] space-y-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-600" />
+          {/* Input Form Column (5 cols): Crafting Table Interface */}
+          <div className="lg:col-span-5 mc-panel p-5 border-2 border-black space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-[#3c3d44]">
+              <div className="w-8 h-8 mc-slot flex items-center justify-center text-[#ffea75]">
+                <Sparkles className="w-4 h-4" />
+              </div>
               <div>
-                <h3 className="text-base font-bold text-stone-900 font-sketch text-lg">Personalized Brainstormer</h3>
-                <p className="text-xs text-stone-600 font-sketch text-sm">
-                  AI suggestions tailored to hobbies, budget, and gift preference.
+                <h3 className="text-sm font-bold text-white mc-text-shadow font-mc">
+                  ENCHANTER BRAINSTORM
+                </h3>
+                <p className="text-[11px] text-[#a3a4ab] font-pixel">
+                  AI suggestions tailored to hobbies, emerald budget, and DIY craft preference.
                 </p>
               </div>
             </div>
 
-            <form onSubmit={handleBrainstormSubmit} className="space-y-4 pt-2">
-              {/* Quick Select Existing Contact */}
+            <form onSubmit={handleBrainstormSubmit} className="space-y-3.5">
+              {/* Select Existing Contact */}
               <div>
-                <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-                  Select Recipient
+                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                  Target Player
                 </label>
                 <select
                   value={selectedPersonId}
                   onChange={(e) => handlePersonSelect(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-medium"
+                  className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                 >
-                  <option value="custom">✍️ Custom / New Recipient</option>
+                  <option value="custom">✍️ Custom / New Player</option>
                   {people.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name} ({p.relationship})
@@ -359,26 +357,26 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
               {selectedPersonId === 'custom' && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-stone-600 mb-1">Name</label>
+                    <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">Player Name</label>
                     <input
                       type="text"
-                      placeholder="e.g. Jordan"
+                      placeholder="e.g. Alex"
                       value={recipientName}
                       onChange={(e) => setRecipientName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-xs"
+                      className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-stone-600 mb-1">Relation</label>
+                    <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">Group</label>
                     <select
                       value={relationship}
                       onChange={(e) => setRelationship(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-xs"
+                      className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                     >
                       <option value="partner">Partner</option>
                       <option value="family">Family</option>
                       <option value="friend">Friend</option>
-                      <option value="colleague">Colleague</option>
+                      <option value="colleague">Guild Mate</option>
                     </select>
                   </div>
                 </div>
@@ -386,94 +384,94 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
 
               {/* Occasion */}
               <div>
-                <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-                  Occasion
+                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                  Quest Event / Occasion
                 </label>
                 <select
                   value={occasion}
                   onChange={(e) => setOccasion(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-medium"
+                  className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                 >
-                  <option value="Birthday">🎂 Birthday</option>
-                  <option value="Christmas / Winter Holiday">🎄 Christmas / Winter Holidays</option>
-                  <option value="Anniversary">💍 Anniversary</option>
-                  <option value="Valentine's Day">❤️ Valentine's Day</option>
-                  <option value="Mother's Day">🌸 Mother's Day</option>
-                  <option value="Father's Day">👔 Father's Day</option>
-                  <option value="Just Because">✨ Just Because / Surprise</option>
+                  <option value="Birthday">🎂 Level Up / Birthday</option>
+                  <option value="Christmas / Winter Holiday">🎄 Winter Solstice Fest</option>
+                  <option value="Anniversary">💍 Guild Anniversary</option>
+                  <option value="Valentine's Day">❤️ Heart Day</option>
+                  <option value="Mother's Day">🌸 Mother&apos;s Celebration</option>
+                  <option value="Father's Day">👔 Father&apos;s Celebration</option>
+                  <option value="Just Because">✨ Spontaneous Loot Drop</option>
                 </select>
               </div>
 
               {/* Interests & Hobbies */}
               <div>
-                <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-                  Hobbies, Interests, Passions
+                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                  Hobbies, Skills & Passions
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="e.g., Specialty Coffee, Rock Climbing, Sourdough, Watercolor, Sci-Fi..."
+                  placeholder="e.g., Redstone engineering, Potion brewing, Botany, Cooking, Mining..."
                   value={interests}
                   onChange={(e) => setInterests(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs"
+                  className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                 />
               </div>
 
               {/* Budget & Gift Type */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-stone-600 mb-1">
-                    Target Budget ($)
+                  <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                    Emerald Budget ($)
                   </label>
                   <input
                     type="number"
                     value={budget}
                     onChange={(e) => setBudget(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-xs"
+                    className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-600 mb-1">Gift Preference</label>
+                  <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">Loot Preference</label>
                   <select
                     value={giftPreference}
                     onChange={(e) => setGiftPreference(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-xs"
+                    className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                   >
-                    <option value="both">Both Bought & Handmade</option>
-                    <option value="handmade">Handmade DIY Only</option>
-                    <option value="bought">Bought Only</option>
+                    <option value="both">Both Trade & DIY Craft</option>
+                    <option value="handmade">Handmade Craft Only</option>
+                    <option value="bought">Villager Trade Only</option>
                   </select>
                 </div>
               </div>
 
               {/* Notes */}
               <div>
-                <label className="block text-xs font-medium text-stone-600 mb-1">
-                  Extra Context / Quirks (Optional)
+                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                  Extra Context / Preferences
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Loves minimalist aesthetics, no clutter"
+                  placeholder="e.g. Minimalist, no inventory clutter"
                   value={additionalNotes}
                   onChange={(e) => setAdditionalNotes(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-xs"
+                  className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isBrainstorming}
-                className="w-full py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors disabled:opacity-50"
+                className="w-full py-2 mc-button-gold text-xs flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isBrainstorming ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Consulting Gift Assistant...
+                    Consulting Enchanter...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 text-amber-400" />
-                    Generate 5 Thoughtful Ideas
+                    <Sparkles className="w-4 h-4" />
+                    Craft 5 Thoughtful Ideas
                   </>
                 )}
               </button>
@@ -483,11 +481,11 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
           {/* Results Column (7 cols) */}
           <div className="lg:col-span-7 space-y-4">
             {brainstormError && (
-              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="p-3 mc-panel-dark border border-[#ff5555] text-xs text-[#ffaaaa] flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-[#ff5555] shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold">Notice:</span> {brainstormError}
-                  <span className="block mt-0.5 text-stone-600">
+                  <span className="font-bold text-white">Notice:</span> {brainstormError}
+                  <span className="block mt-0.5 text-[#a3a4ab]">
                     Displaying curated idea templates below.
                   </span>
                 </div>
@@ -495,14 +493,14 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
             )}
 
             {brainstormResults.length === 0 && !isBrainstorming ? (
-              <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-stone-300">
-                <Lightbulb className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-                <h4 className="text-base font-bold text-stone-800">
-                  Ready to Brainstorm Gifts
+              <div className="p-12 text-center mc-panel-dark border-2 border-black">
+                <Lightbulb className="w-10 h-10 text-[#555555] mx-auto mb-3" />
+                <h4 className="text-sm font-bold text-white mc-text-shadow font-mc">
+                  READY TO BRAINSTORM GIFTS
                 </h4>
-                <p className="text-xs text-stone-500 max-w-sm mx-auto mt-1">
-                  Fill in your recipient's interests on the left and our AI gift advisor will propose
-                  a tailored mix of store-bought and meaningful handmade projects.
+                <p className="text-xs text-[#a3a4ab] max-w-sm mx-auto mt-1 font-pixel">
+                  Enter your recipient&apos;s interests on the left and our AI wizard will propose
+                  a tailored mix of store-bought trades and meaningful handmade recipes.
                 </p>
               </div>
             ) : (
@@ -513,82 +511,82 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                 return (
                   <div
                     key={idx}
-                    className={`p-5 rounded-2xl bg-[#fffefb] border-2 border-stone-800 shadow-[3px_3px_0px_#292524] transition-all space-y-3`}
+                    className="p-4 mc-panel border-2 border-black space-y-3"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
                           {isHandmade ? (
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#ffe4e6] text-rose-950 border border-stone-800 flex items-center gap-1 shadow-[1px_1px_0px_#292524]">
-                              <Sparkles className="w-3 h-3 text-rose-600" /> Handmade DIY
+                            <span className="px-2 py-0.5 text-xs font-pixel bg-[#2b7730] text-[#55ff55] border border-black flex items-center gap-1 mc-text-shadow">
+                              <Sparkles className="w-3 h-3 text-[#55ff55]" /> CRAFTED DIY
                             </span>
                           ) : (
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#fef3c7] text-amber-950 border border-stone-800 flex items-center gap-1 shadow-[1px_1px_0px_#292524]">
-                              <Tag className="w-3 h-3 text-amber-700" /> Bought Gift
+                            <span className="px-2 py-0.5 text-xs font-pixel bg-[#d97706] text-black border border-black flex items-center gap-1 font-bold">
+                              <Tag className="w-3 h-3 text-black" /> TRADE ITEM
                             </span>
                           )}
 
-                          <span className="font-bold text-stone-900 text-xs">
+                          <span className="font-bold text-[#ffea75] text-xs font-pixel">
                             {formatCurrency(idea.estimatedCost)}
                           </span>
 
                           {isHandmade && idea.craftingHours && (
-                            <span className="font-medium text-stone-600 text-xs flex items-center gap-1 font-sketch text-sm">
-                              <Clock className="w-3 h-3 text-stone-500" /> ~{idea.craftingHours}h crafting
+                            <span className="text-[#a3a4ab] text-xs flex items-center gap-1 font-pixel">
+                              <Clock className="w-3 h-3 text-[#55ffff]" /> ~{idea.craftingHours}h crafting
                             </span>
                           )}
                           {isHandmade && idea.difficulty && (
-                            <span className="px-1.5 py-0.2 rounded-md border border-stone-800 bg-[#fffefb] text-stone-800 text-[11px] font-bold">
+                            <span className="px-1.5 py-0.2 border border-black bg-[#212026] text-white text-[10px]">
                               {idea.difficulty}
                             </span>
                           )}
                         </div>
 
-                        <h4 className="text-base font-bold text-stone-900 mt-2 font-sketch text-lg">{idea.title}</h4>
+                        <h4 className="text-sm font-bold text-white mt-2 mc-text-shadow font-pixel">{idea.title}</h4>
                       </div>
 
                       <button
                         onClick={() => handleSaveIdea(idea)}
                         disabled={isSaved}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 border-2 border-stone-800 ${
+                        className={`px-3 py-1.5 text-xs flex items-center gap-1.5 shrink-0 ${
                           isSaved
-                            ? 'bg-[#dcfce7] text-emerald-950 shadow-[1px_1px_0px_#292524]'
-                            : 'bg-stone-900 hover:bg-stone-800 text-[#fffefb] border-stone-900 shadow-[1.5px_1.5px_0px_#292524]'
+                            ? 'mc-panel-dark text-[#55ff55] border border-black'
+                            : 'mc-button-emerald'
                         }`}
                       >
                         {isSaved ? (
                           <>
-                            <Check className="w-3.5 h-3.5 text-emerald-700" /> Added to Gifts
+                            <Check className="w-3.5 h-3.5 text-[#55ff55]" /> Added to Chest
                           </>
                         ) : (
                           <>
-                            <Plus className="w-3.5 h-3.5" /> Add to Gifts
+                            <Plus className="w-3.5 h-3.5" /> Put in Chest
                           </>
                         )}
                       </button>
                     </div>
 
-                    <p className="text-xs text-stone-700 leading-relaxed font-sketch text-sm">{idea.description}</p>
+                    <p className="text-xs text-[#d1d5db] font-pixel">{idea.description}</p>
 
                     {/* Supplies / Sourcing */}
                     {idea.suppliesNeeded && idea.suppliesNeeded.length > 0 && (
-                      <div className="text-xs text-stone-800 bg-[#fffdf7] p-2.5 rounded-xl border border-stone-800 shadow-[1px_1px_0px_#292524]">
-                        <span className="font-bold text-stone-900">Materials Needed: </span>
-                        {idea.suppliesNeeded.join(', ')}
+                      <div className="text-xs mc-panel-dark p-2 border border-black">
+                        <span className="font-mc text-[9px] text-[#ffea75]">MATERIALS NEEDED: </span>
+                        <span className="text-white">{idea.suppliesNeeded.join(', ')}</span>
                       </div>
                     )}
 
                     {idea.whereToFindOrMake && !idea.suppliesNeeded && (
-                      <div className="text-xs text-stone-500">
-                        <span className="font-semibold text-stone-700">Where to find: </span>
+                      <div className="text-xs text-[#a3a4ab]">
+                        <span className="text-white">Where to find: </span>
                         {idea.whereToFindOrMake}
                       </div>
                     )}
 
                     {/* Lead time advice */}
                     {idea.leadTimeAdvice && (
-                      <div className="text-[11px] text-amber-800 bg-amber-50/70 p-2 rounded-lg font-medium flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-amber-600" />
+                      <div className="text-[11px] text-[#ffea75] bg-[#38280f] p-2 border border-black flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-[#ffea75]" />
                         <span>{idea.leadTimeAdvice}</span>
                       </div>
                     )}
@@ -602,49 +600,53 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
         /* DIY Craft Project Generator */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Form */}
-          <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
-            <div className="flex items-center gap-2">
-              <Wrench className="w-5 h-5 text-rose-600" />
+          <div className="lg:col-span-5 mc-panel p-5 border-2 border-black space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-[#3c3d44]">
+              <div className="w-8 h-8 mc-slot flex items-center justify-center text-[#55ff55]">
+                <Wrench className="w-4 h-4 text-[#55ff55]" />
+              </div>
               <div>
-                <h3 className="text-base font-bold text-stone-900">DIY Craft Project Generator</h3>
-                <p className="text-xs text-stone-500">
-                  Turn any handmade idea into a concrete timeline, supplies list, and step-by-step instructions.
+                <h3 className="text-sm font-bold text-white mc-text-shadow font-mc">
+                  DIY RECIPE BLUEPRINT
+                </h3>
+                <p className="text-[11px] text-[#a3a4ab] font-pixel">
+                  Turn any handmade concept into ingredients, timeline, and step-by-step instructions.
                 </p>
               </div>
             </div>
 
-            <form onSubmit={handleCraftPlannerSubmit} className="space-y-4 pt-2">
+            <form onSubmit={handleCraftPlannerSubmit} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
                   Handmade Gift Concept *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g., Chunky Knit Wool Blanket, Scented Soy Candle Set"
+                  placeholder="e.g., Carved Wooden Spoon, Wool Scarf"
                   value={craftGiftTitle}
                   onChange={(e) => setCraftGiftTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-medium"
+                  className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-                  Recipient Name (Optional)
+                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                  Player Name (Optional)
                 </label>
                 <input
                   type="text"
                   placeholder="e.g., Mom, Alex"
                   value={craftRecipient}
                   onChange={(e) => setCraftRecipient(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs"
+                  className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-stone-600 mb-1">
-                    Available Crafting Hours
+                  <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                    Available Craft Hours
                   </label>
                   <input
                     type="number"
@@ -653,20 +655,20 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                     onChange={(e) =>
                       setCraftAvailableHours(e.target.value === '' ? '' : Number(e.target.value))
                     }
-                    className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-xs"
+                    className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-600 mb-1">Skill Level</label>
+                  <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">Skill Level</label>
                   <select
                     value={craftSkillLevel}
                     onChange={(e) => setCraftSkillLevel(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-xs"
+                    className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                   >
                     <option value="Beginner">Beginner (Simple & Fast)</option>
                     <option value="Beginner/Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced (Experienced)</option>
+                    <option value="Advanced">Advanced (Master Crafter)</option>
                   </select>
                 </div>
               </div>
@@ -674,17 +676,17 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
               <button
                 type="submit"
                 disabled={isPlanningCraft}
-                className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors disabled:opacity-50"
+                className="w-full py-2 mc-button-emerald text-xs flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isPlanningCraft ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Generating Blueprint & Schedule...
+                    Generating Recipe Blueprint...
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    Generate Craft Plan & Timeline
+                    Generate Recipe Blueprint
                   </>
                 )}
               </button>
@@ -694,37 +696,37 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
           {/* Blueprint Result */}
           <div className="lg:col-span-7 space-y-4">
             {!craftPlanResult && !isPlanningCraft ? (
-              <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-stone-300">
-                <Package className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-                <h4 className="text-base font-bold text-stone-800">
-                  Ready to Plan a Handmade Masterpiece
+              <div className="p-12 text-center mc-panel-dark border-2 border-black">
+                <Package className="w-10 h-10 text-[#555555] mx-auto mb-3" />
+                <h4 className="text-sm font-bold text-white mc-text-shadow font-mc">
+                  READY TO PLAN A CRAFT
                 </h4>
-                <p className="text-xs text-stone-500 max-w-sm mx-auto mt-1">
-                  Type any DIY gift idea on the left. We'll outline the exact materials you need to
-                  buy, step-by-step instructions, and a timeline schedule so you finish with time to spare.
+                <p className="text-xs text-[#a3a4ab] max-w-sm mx-auto mt-1 font-pixel">
+                  Type any DIY idea on the left. We&apos;ll outline the exact ingredients to gather,
+                  step-by-step instructions, and a timeline schedule so you finish before the celebration tick.
                 </p>
               </div>
             ) : craftPlanResult ? (
-              <div className="p-6 bg-white rounded-2xl border border-rose-200/80 shadow-xs space-y-5">
+              <div className="p-5 mc-panel border-2 border-black space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
-                      DIY Craft Blueprint
+                    <span className="px-2 py-0.5 text-xs font-pixel bg-[#2b7730] text-[#55ff55] border border-black mc-text-shadow">
+                      DIY RECIPE BLUEPRINT
                     </span>
-                    <h3 className="text-lg font-bold text-stone-900 mt-2">
+                    <h3 className="text-base font-bold text-white mc-text-shadow mt-2 font-pixel">
                       {craftPlanResult.title}
                     </h3>
-                    <div className="flex items-center gap-3 text-xs text-stone-500 mt-1">
+                    <div className="flex items-center gap-3 text-xs text-[#a3a4ab] mt-1 font-pixel">
                       <span>
-                        Total Time: <strong>{craftPlanResult.estimatedTotalHours} hrs</strong>
+                        Time: <strong className="text-white">{craftPlanResult.estimatedTotalHours} hrs</strong>
                       </span>
-                      <span>•</span>
+                      <span>■</span>
                       <span>
-                        Est. Cost: <strong>${craftPlanResult.estimatedMaterialCost}</strong>
+                        Cost: <strong className="text-[#ffea75]">${craftPlanResult.estimatedMaterialCost}</strong>
                       </span>
-                      <span>•</span>
+                      <span>■</span>
                       <span>
-                        Difficulty: <strong>{craftPlanResult.difficulty}</strong>
+                        Difficulty: <strong className="text-white">{craftPlanResult.difficulty}</strong>
                       </span>
                     </div>
                   </div>
@@ -732,19 +734,19 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                   <button
                     onClick={handleSaveCraftPlanToGifts}
                     disabled={craftPlanSaved}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0 ${
+                    className={`px-3 py-1.5 text-xs flex items-center gap-1.5 shrink-0 ${
                       craftPlanSaved
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : 'bg-stone-900 hover:bg-stone-800 text-white shadow-xs'
+                        ? 'mc-panel-dark text-[#55ff55] border border-black'
+                        : 'mc-button-emerald'
                     }`}
                   >
                     {craftPlanSaved ? (
                       <>
-                        <Check className="w-3.5 h-3.5" /> Added to My Gifts
+                        <Check className="w-3.5 h-3.5 text-[#55ff55]" /> Added to Chest
                       </>
                     ) : (
                       <>
-                        <Plus className="w-3.5 h-3.5" /> Save to My Gifts
+                        <Plus className="w-3.5 h-3.5" /> Save to Chest
                       </>
                     )}
                   </button>
@@ -753,20 +755,20 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                 {/* Timeline schedule */}
                 {craftPlanResult.timelineSchedule && (
                   <div className="space-y-2">
-                    <h4 className="text-xs font-bold text-stone-700 uppercase tracking-wider">
-                      Suggested Preparation Timeline
+                    <h4 className="font-mc text-[9px] text-[#ffea75] mc-text-shadow">
+                      PREPARATION TIMELINE
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {craftPlanResult.timelineSchedule.map((phase: any, idx: number) => (
                         <div
                           key={idx}
-                          className="p-3 rounded-xl bg-stone-50 border border-stone-200 text-xs"
+                          className="p-2.5 mc-panel-dark border border-black text-xs"
                         >
-                          <div className="font-bold text-stone-900">{phase.phase}</div>
-                          <div className="text-[11px] text-stone-500 mt-0.5">
-                            {phase.estimatedDaysBefore} days prior • {phase.hours}h
+                          <div className="font-bold text-white">{phase.phase}</div>
+                          <div className="text-[10px] text-[#55ffff] mt-0.5">
+                            {phase.estimatedDaysBefore} days before • {phase.hours}h
                           </div>
-                          <p className="text-[11px] text-stone-600 mt-1">{phase.task}</p>
+                          <p className="text-[11px] text-[#d1d5db] mt-1">{phase.task}</p>
                         </div>
                       ))}
                     </div>
@@ -774,47 +776,51 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                 )}
 
                 {/* Materials List */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-stone-700 uppercase tracking-wider">
-                    Required Materials & Supplies
-                  </h4>
-                  <div className="space-y-1">
-                    {craftPlanResult.materialsList?.map((mat: any, idx: number) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between p-2 rounded-lg bg-stone-50 text-xs"
-                      >
-                        <span className="font-medium text-stone-800">{mat.name}</span>
-                        <div className="flex items-center gap-2 text-stone-500">
-                          <span>{mat.whereToGet}</span>
-                          <span className="font-mono font-bold text-stone-700">
-                            ${mat.approxCost}
-                          </span>
+                {craftPlanResult.materialsList && (
+                  <div className="space-y-2">
+                    <h4 className="font-mc text-[9px] text-[#80ff20] mc-text-shadow">
+                      INGREDIENTS & SUPPLIES
+                    </h4>
+                    <div className="space-y-1">
+                      {craftPlanResult.materialsList?.map((mat: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-2 mc-panel-dark border border-black text-xs"
+                        >
+                          <span className="text-white">{mat.name}</span>
+                          <div className="flex items-center gap-2 text-[#a3a4ab]">
+                            <span>{mat.whereToGet}</span>
+                            <span className="font-pixel font-bold text-[#ffea75]">
+                              ${mat.approxCost}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Step by Step */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-stone-700 uppercase tracking-wider">
-                    Step-by-Step Crafting Instructions
-                  </h4>
-                  <div className="space-y-1.5 text-xs text-stone-700">
-                    {craftPlanResult.stepByStep?.map((st: string, idx: number) => (
-                      <div key={idx} className="p-2.5 rounded-lg bg-stone-50 border border-stone-150">
-                        {st}
-                      </div>
-                    ))}
+                {craftPlanResult.stepByStep && (
+                  <div className="space-y-2">
+                    <h4 className="font-mc text-[9px] text-[#55ffff] mc-text-shadow">
+                      CRAFTING INSTRUCTIONS
+                    </h4>
+                    <div className="space-y-1 text-xs text-white">
+                      {craftPlanResult.stepByStep?.map((st: string, idx: number) => (
+                        <div key={idx} className="p-2 mc-panel-dark border border-black">
+                          {st}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Packaging idea */}
                 {craftPlanResult.packagingIdea && (
-                  <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-200/80 text-xs">
-                    <span className="font-bold text-amber-950">🎁 Creative Wrapping Idea: </span>
-                    <span className="text-amber-900">{craftPlanResult.packagingIdea}</span>
+                  <div className="p-2.5 bg-[#38280f] border border-black text-xs">
+                    <span className="font-bold text-[#ffea75]">🎁 Wrapping Tip: </span>
+                    <span className="text-white">{craftPlanResult.packagingIdea}</span>
                   </div>
                 )}
               </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GiftItem, GiftType, OccasionType, GiftStatus, Priority, CraftSupply, CraftStep } from '../types';
 import { useGifts } from '../context/GiftContext';
-import { X, Plus, Trash2, Sparkles, Clock, DollarSign, Tag, CheckCircle2 } from 'lucide-react';
+import { X, Plus, Trash2, Sparkles, Clock, DollarSign, Tag } from 'lucide-react';
 
 interface GiftModalProps {
   isOpen: boolean;
@@ -158,32 +158,32 @@ export const GiftModal: React.FC<GiftModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/50 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-[#fffefb] rounded-2xl shadow-[6px_6px_0px_#292524] border-2 border-stone-800 overflow-hidden my-8 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 overflow-y-auto font-pixel">
+      <div className="relative w-full max-w-2xl mc-panel border-4 border-black overflow-hidden my-8 max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b-2 border-stone-800 bg-[#fffefb]">
+        <div className="flex items-center justify-between px-5 py-3 border-b-2 border-[#3c3d44] bg-[#212026]">
           <div>
-            <h2 className="text-xl font-bold text-stone-900 font-sketch text-2xl">
-              {giftToEdit ? 'Edit Gift Idea' : 'Add New Gift Idea'} 🎁
+            <h2 className="text-sm font-bold text-white mc-text-shadow font-mc">
+              {giftToEdit ? 'EDIT GIFT LOOT' : 'CRAFT / LOG NEW GIFT'} 🎁
             </h2>
-            <p className="text-xs text-stone-600 mt-0.5 font-sketch text-sm">
-              Keep track of purchased items, handmade crafts, budgets, and crafting time.
+            <p className="text-[11px] text-[#a3a4ab] mt-0.5 font-pixel">
+              Track trade items, crafting materials, emerald budgets, and assembly time.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-stone-700 hover:text-stone-950 bg-[#fffefb] border-2 border-stone-800 rounded-xl shadow-[1.5px_1.5px_0px_#292524] hover:bg-stone-100 transition-all"
+            className="mc-button-red p-1 text-xs"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Scrollable Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
           {/* Gift Type Switcher */}
           <div>
-            <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2 font-sketch text-sm">
-              Gift Type
+            <label className="block text-xs font-pixel text-[#a3a4ab] mb-1.5">
+              Item Category
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -192,14 +192,14 @@ export const GiftModal: React.FC<GiftModalProps> = ({
                   setType('bought');
                   if (status === 'planning' || status === 'materials_ready') setStatus('idea');
                 }}
-                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-stone-800 text-sm font-bold transition-all ${
+                className={`flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-pixel border-2 transition-none ${
                   type === 'bought'
-                    ? 'bg-[#fef3c7] text-stone-900 shadow-[2px_2px_0px_#292524]'
-                    : 'bg-[#fffefb] text-stone-600 hover:bg-stone-100 shadow-[1px_1px_0px_#292524]'
+                    ? 'bg-[#d97706] text-black border-white font-bold'
+                    : 'mc-button'
                 }`}
               >
-                <Tag className="w-4 h-4 text-amber-700" />
-                <span>Bought / Retail Gift</span>
+                <Tag className="w-4 h-4" />
+                <span>Villager Trade / Bought</span>
               </button>
               <button
                 type="button"
@@ -207,45 +207,45 @@ export const GiftModal: React.FC<GiftModalProps> = ({
                   setType('handmade');
                   if (status === 'purchased' || status === 'shipped') setStatus('planning');
                 }}
-                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-stone-800 text-sm font-bold transition-all ${
+                className={`flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-pixel border-2 transition-none ${
                   type === 'handmade'
-                    ? 'bg-[#ffe4e6] text-stone-900 shadow-[2px_2px_0px_#292524]'
-                    : 'bg-[#fffefb] text-stone-600 hover:bg-stone-100 shadow-[1px_1px_0px_#292524]'
+                    ? 'bg-[#2b7730] text-[#55ff55] border-white font-bold'
+                    : 'mc-button'
                 }`}
               >
-                <Sparkles className="w-4 h-4 text-rose-600" />
-                <span>Handmade / DIY Craft</span>
+                <Sparkles className="w-4 h-4 text-[#55ff55]" />
+                <span>Handmade / DIY Recipe</span>
               </button>
             </div>
           </div>
 
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-              Gift Name / Idea *
+            <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+              Item Name / Idea *
             </label>
             <input
               type="text"
               required
-              placeholder={type === 'handmade' ? 'e.g., Hand-carved Wooden Spoon Set' : 'e.g., Sony Noise Cancelling Headphones'}
+              placeholder={type === 'handmade' ? 'e.g., Hand-carved Birch Spoon Set' : 'e.g., Noise Cancelling Headphones'}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:border-stone-900"
+              className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
             />
           </div>
 
           {/* Recipient & Occasion */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-                Recipient
+              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                Recipient Player
               </label>
               <select
                 value={recipientId}
                 onChange={(e) => setRecipientId(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900"
+                className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
               >
-                <option value="unassigned">✨ General Idea Pool (Not Assigned)</option>
+                <option value="unassigned">✨ General Chest (Unassigned)</option>
                 {people.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name} ({p.relationship})
@@ -255,22 +255,22 @@ export const GiftModal: React.FC<GiftModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-                Occasion
+              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                Quest Occasion
               </label>
               <select
                 value={occasion}
                 onChange={(e) => setOccasion(e.target.value as OccasionType)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900"
+                className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
               >
-                <option value="birthday">🎂 Birthday</option>
-                <option value="christmas">🎄 Christmas / Winter Holidays</option>
-                <option value="anniversary">💍 Anniversary</option>
-                <option value="valentines">❤️ Valentine's Day</option>
-                <option value="mothers_day">🌸 Mother's Day</option>
-                <option value="fathers_day">👔 Father's Day</option>
-                <option value="halloween">🎃 Halloween</option>
-                <option value="just_because">🌟 Just Because / Surprise</option>
+                <option value="birthday">🎂 Birthday / Level Up</option>
+                <option value="christmas">🎄 Winter Holidays</option>
+                <option value="anniversary">💍 Guild Anniversary</option>
+                <option value="valentines">❤️ Heart Day</option>
+                <option value="mothers_day">🌸 Mother&apos;s Day</option>
+                <option value="fathers_day">👔 Father&apos;s Day</option>
+                <option value="halloween">🎃 Spooky Fest</option>
+                <option value="just_because">🌟 Surprise Drop</option>
                 <option value="custom">✨ Custom Occasion</option>
               </select>
             </div>
@@ -278,58 +278,58 @@ export const GiftModal: React.FC<GiftModalProps> = ({
 
           {occasion === 'custom' && (
             <div>
-              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
                 Custom Occasion Name
               </label>
               <input
                 type="text"
-                placeholder="e.g., Graduation, Housewarming, Baby Shower"
+                placeholder="e.g., Housewarming, Graduation"
                 value={customOccasionName}
                 onChange={(e) => setCustomOccasionName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900"
+                className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
               />
             </div>
           )}
 
           {/* Status, Priority & Target Year */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-                Status
+              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                Progress Status
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as GiftStatus)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900"
+                className="w-full mc-input px-2.5 py-1.5 text-xs font-pixel"
               >
                 <option value="idea">💡 Idea</option>
                 {type === 'bought' ? (
                   <>
                     <option value="researching">🔍 Researching</option>
                     <option value="purchased">💳 Purchased</option>
-                    <option value="shipped">📦 Shipped</option>
+                    <option value="shipped">📦 In Delivery</option>
                   </>
                 ) : (
                   <>
-                    <option value="planning">📋 Planning DIY</option>
+                    <option value="planning">📋 Planning Recipe</option>
                     <option value="materials_ready">🧶 Supplies Ready</option>
-                    <option value="in_progress">🔨 In Progress (Crafting)</option>
+                    <option value="in_progress">🔨 Crafting In Progress</option>
                     <option value="completed">✅ Craft Completed</option>
                   </>
                 )}
-                <option value="wrapped">🎁 Wrapped & Ready</option>
-                <option value="given">🎉 Given / Delivered</option>
+                <option value="wrapped">🎁 Wrapped in Chest</option>
+                <option value="given">🎉 Given to Player</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
                 Priority
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Priority)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900"
+                className="w-full mc-input px-2.5 py-1.5 text-xs font-pixel"
               >
                 <option value="high">🔴 High Priority</option>
                 <option value="medium">🟡 Medium Priority</option>
@@ -338,27 +338,27 @@ export const GiftModal: React.FC<GiftModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
                 Target Year
               </label>
               <input
                 type="number"
                 value={targetYear}
                 onChange={(e) => setTargetYear(Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900"
+                className="w-full mc-input px-2.5 py-1.5 text-xs font-pixel"
               />
             </div>
           </div>
 
           {/* Pricing & Budget section */}
-          <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 space-y-4">
-            <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
-              <DollarSign className="w-3.5 h-3.5 text-stone-600" />
-              {type === 'handmade' ? 'Crafting Materials & Budget' : 'Cost & Purchase Info'}
+          <div className="p-3.5 mc-panel-dark border border-black space-y-3">
+            <h3 className="font-mc text-[9px] text-[#ffea75] flex items-center gap-1.5 mc-text-shadow">
+              <DollarSign className="w-3.5 h-3.5 text-[#ffea75]" />
+              {type === 'handmade' ? 'MATERIALS COST & EMERALD BUDGET' : 'PRICE & MERCHANT TRADE INFO'}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-stone-600 mb-1">
+                <label className="block text-xs text-[#a3a4ab] mb-1 font-pixel">
                   Estimated Cost ($)
                 </label>
                 <input
@@ -367,36 +367,36 @@ export const GiftModal: React.FC<GiftModalProps> = ({
                   placeholder="0.00"
                   value={estimatedPrice}
                   onChange={(e) => setEstimatedPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-stone-900 text-sm"
+                  className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-600 mb-1">
-                  Actual Paid Cost ($) {actualPrice !== '' ? '(Recorded)' : ''}
+                <label className="block text-xs text-[#a3a4ab] mb-1 font-pixel">
+                  Actual Paid ($) {actualPrice !== '' ? '(Recorded)' : ''}
                 </label>
                 <input
                   type="number"
                   step="0.5"
-                  placeholder="Leave blank if not paid yet"
+                  placeholder="Blank if unpaid"
                   value={actualPrice}
                   onChange={(e) => setActualPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-stone-900 text-sm"
+                  className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                 />
               </div>
             </div>
 
             {type === 'bought' && (
               <div>
-                <label className="block text-xs font-medium text-stone-600 mb-1">
-                  Store, Brand, or URL
+                <label className="block text-xs text-[#a3a4ab] mb-1 font-pixel">
+                  Merchant, Store, or Item URL
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Amazon, Etsy, local boutique, or https://..."
+                  placeholder="e.g. Local shop, Etsy, or web link..."
                   value={storeOrUrl}
                   onChange={(e) => setStoreOrUrl(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-stone-900 text-sm"
+                  className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                 />
               </div>
             )}
@@ -404,16 +404,16 @@ export const GiftModal: React.FC<GiftModalProps> = ({
 
           {/* HANDMADE / CRAFTING SPECIFICS */}
           {type === 'handmade' && (
-            <div className="p-4 rounded-xl bg-rose-50/50 border border-rose-200/80 space-y-4">
-              <h3 className="text-xs font-bold text-rose-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-rose-600" />
-                DIY Crafting Time & Materials Planner
+            <div className="p-3.5 mc-panel-dark border border-black space-y-3">
+              <h3 className="font-mc text-[9px] text-[#55ff55] flex items-center gap-1.5 mc-text-shadow">
+                <Clock className="w-3.5 h-3.5 text-[#55ff55]" />
+                DIY CRAFTING TIME & RECIPE INGREDIENTS
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">
-                    Est. Crafting Hours
+                  <label className="block text-xs text-[#a3a4ab] mb-1 font-pixel">
+                    Est. Craft Hours
                   </label>
                   <input
                     type="number"
@@ -421,13 +421,13 @@ export const GiftModal: React.FC<GiftModalProps> = ({
                     placeholder="e.g. 6.5"
                     value={craftingHoursEstimated}
                     onChange={(e) => setCraftingHoursEstimated(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-stone-900 text-sm"
+                    className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">
-                    Hours Spent So Far
+                  <label className="block text-xs text-[#a3a4ab] mb-1 font-pixel">
+                    Hours Worked
                   </label>
                   <input
                     type="number"
@@ -435,48 +435,48 @@ export const GiftModal: React.FC<GiftModalProps> = ({
                     placeholder="0"
                     value={craftingHoursSpent}
                     onChange={(e) => setCraftingHoursSpent(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-stone-900 text-sm"
+                    className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">
-                    Difficulty Level
+                  <label className="block text-xs text-[#a3a4ab] mb-1 font-pixel">
+                    Recipe Difficulty
                   </label>
                   <select
                     value={craftDifficulty}
                     onChange={(e) => setCraftDifficulty(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-stone-900 text-sm"
+                    className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                   >
                     <option value="Easy">Easy (Beginner friendly)</option>
-                    <option value="Medium">Medium (Takes attention)</option>
-                    <option value="Advanced">Advanced (Multi-day/complex)</option>
+                    <option value="Medium">Medium (Takes patience)</option>
+                    <option value="Advanced">Advanced (Master Crafter)</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1">
-                  Target Finish Deadline (Leave buffer before event!)
+                <label className="block text-xs text-[#a3a4ab] mb-1 font-pixel">
+                  Target Finish Deadline (Before Quest Tick)
                 </label>
                 <input
                   type="date"
                   value={craftDeadline}
                   onChange={(e) => setCraftDeadline(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-stone-900 text-sm"
+                  className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                 />
               </div>
 
               {/* Supplies checklist */}
-              <div className="pt-2 border-t border-rose-200/60">
-                <label className="block text-xs font-semibold text-stone-800 mb-2">
-                  Materials & Supplies Needed ({supplies.length})
+              <div className="pt-2 border-t border-[#3c3d44]">
+                <label className="block font-mc text-[9px] text-[#80ff20] mb-2 mc-text-shadow">
+                  INGREDIENTS & SUPPLIES ({supplies.length})
                 </label>
-                <div className="space-y-2 mb-3">
+                <div className="space-y-1.5 mb-2">
                   {supplies.map((sup) => (
                     <div
                       key={sup.id}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg bg-white border border-stone-200 text-xs"
+                      className="flex items-center justify-between p-2 mc-panel border border-black text-xs"
                     >
                       <div className="flex items-center gap-2 flex-1">
                         <input
@@ -487,18 +487,18 @@ export const GiftModal: React.FC<GiftModalProps> = ({
                               supplies.map((s) => (s.id === sup.id ? { ...s, purchased: !s.purchased } : s))
                             );
                           }}
-                          className="rounded border-stone-300 text-rose-600 focus:ring-rose-500"
+                          className="accent-[#2b7730]"
                         />
-                        <span className={sup.purchased ? 'line-through text-stone-400' : 'text-stone-800 font-medium'}>
+                        <span className={sup.purchased ? 'line-through text-[#808080]' : 'text-white'}>
                           {sup.name}
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-stone-500">${sup.estimatedCost.toFixed(2)}</span>
+                        <span className="text-[#ffea75]">${sup.estimatedCost.toFixed(2)}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveSupply(sup.id)}
-                          className="text-stone-400 hover:text-red-600"
+                          className="mc-button-red p-1 text-xs"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -510,10 +510,10 @@ export const GiftModal: React.FC<GiftModalProps> = ({
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="New material (e.g. 2 skeins wool)"
+                    placeholder="New ingredient (e.g. 2 Oak planks)"
                     value={newSupplyName}
                     onChange={(e) => setNewSupplyName(e.target.value)}
-                    className="flex-1 px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-xs"
+                    className="flex-1 mc-input px-2.5 py-1 text-xs font-pixel"
                   />
                   <input
                     type="number"
@@ -521,12 +521,12 @@ export const GiftModal: React.FC<GiftModalProps> = ({
                     placeholder="Cost $"
                     value={newSupplyCost}
                     onChange={(e) => setNewSupplyCost(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-20 px-2 py-1.5 rounded-lg border border-stone-200 bg-white text-xs"
+                    className="w-20 mc-input px-2.5 py-1 text-xs font-pixel"
                   />
                   <button
                     type="button"
                     onClick={handleAddSupply}
-                    className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium flex items-center gap-1"
+                    className="mc-button-emerald px-3 py-1 text-xs flex items-center gap-1"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add
                   </button>
@@ -534,15 +534,15 @@ export const GiftModal: React.FC<GiftModalProps> = ({
               </div>
 
               {/* Crafting steps */}
-              <div className="pt-2 border-t border-rose-200/60">
-                <label className="block text-xs font-semibold text-stone-800 mb-2">
-                  Crafting Steps / Timeline ({steps.length})
+              <div className="pt-2 border-t border-[#3c3d44]">
+                <label className="block font-mc text-[9px] text-[#55ffff] mb-2 mc-text-shadow">
+                  CRAFTING PHASES & TIMELINE ({steps.length})
                 </label>
-                <div className="space-y-2 mb-3">
+                <div className="space-y-1.5 mb-2">
                   {steps.map((st) => (
                     <div
                       key={st.id}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg bg-white border border-stone-200 text-xs"
+                      className="flex items-center justify-between p-2 mc-panel border border-black text-xs"
                     >
                       <div className="flex items-center gap-2 flex-1">
                         <input
@@ -551,18 +551,18 @@ export const GiftModal: React.FC<GiftModalProps> = ({
                           onChange={() => {
                             setSteps(steps.map((s) => (s.id === st.id ? { ...s, done: !s.done } : s)));
                           }}
-                          className="rounded border-stone-300 text-rose-600 focus:ring-rose-500"
+                          className="accent-[#2b7730]"
                         />
-                        <span className={st.done ? 'line-through text-stone-400' : 'text-stone-800'}>
+                        <span className={st.done ? 'line-through text-[#808080]' : 'text-white'}>
                           {st.text}
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        {st.hours && <span className="text-stone-400 font-mono">~{st.hours}h</span>}
+                        {st.hours && <span className="text-[#55ffff] font-pixel">~{st.hours}h</span>}
                         <button
                           type="button"
                           onClick={() => handleRemoveStep(st.id)}
-                          className="text-stone-400 hover:text-red-600"
+                          className="mc-button-red p-1 text-xs"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -577,7 +577,7 @@ export const GiftModal: React.FC<GiftModalProps> = ({
                     placeholder="New step (e.g. Cut pattern, carve shape)"
                     value={newStepText}
                     onChange={(e) => setNewStepText(e.target.value)}
-                    className="flex-1 px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-xs"
+                    className="flex-1 mc-input px-2.5 py-1 text-xs font-pixel"
                   />
                   <input
                     type="number"
@@ -585,12 +585,12 @@ export const GiftModal: React.FC<GiftModalProps> = ({
                     placeholder="Hours"
                     value={newStepHours}
                     onChange={(e) => setNewStepHours(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-16 px-2 py-1.5 rounded-lg border border-stone-200 bg-white text-xs"
+                    className="w-16 mc-input px-2.5 py-1 text-xs font-pixel"
                   />
                   <button
                     type="button"
                     onClick={handleAddStep}
-                    className="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-900 text-white text-xs font-medium flex items-center gap-1"
+                    className="mc-button-emerald px-3 py-1 text-xs flex items-center gap-1"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add
                   </button>
@@ -601,32 +601,32 @@ export const GiftModal: React.FC<GiftModalProps> = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-              Private Notes & Secret Hints
+            <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+              Private Notes & Secret Lore
             </label>
             <textarea
               rows={2}
               placeholder="Sizes, favorite color choice, hints they dropped, wrapping ideas..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-800 bg-[#fffefb] text-stone-900 text-sm shadow-[1.5px_1.5px_0px_#292524] focus:outline-hidden"
+              className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
             />
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t-2 border-stone-800">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#3c3d44]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border-2 border-stone-800 text-stone-800 bg-[#fffefb] hover:bg-stone-100 text-xs font-bold shadow-[1.5px_1.5px_0px_#292524] transition-all"
+              className="mc-button px-4 py-1.5 text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-[#fffefb] text-xs font-bold border-2 border-stone-900 shadow-[2px_2px_0px_#292524] transition-all"
+              className="mc-button-emerald px-5 py-1.5 text-xs"
             >
-              {giftToEdit ? 'Save Changes' : 'Add Gift Idea'}
+              {giftToEdit ? 'Save Loot Changes' : 'Store In Chest'}
             </button>
           </div>
         </form>

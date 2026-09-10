@@ -12,12 +12,14 @@ interface CuteFaceProps {
 }
 
 // Deterministic generator if no config provided
-export function getDerivedCuteFace(name: string): CuteFaceConfig {
+export function getDerivedCuteFace(name?: string): CuteFaceConfig {
+  const safeName = typeof name === 'string' && name.trim() ? name.trim() : 'Player';
   let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < safeName.length; i++) {
+    hash = safeName.charCodeAt(i) + ((hash << 5) - hash);
+    hash |= 0;
   }
-  const abs = Math.abs(hash);
+  const abs = Math.abs(hash) || 0;
 
   const expressions: CuteFaceConfig['expression'][] = [
     'happy',
@@ -31,7 +33,7 @@ export function getDerivedCuteFace(name: string): CuteFaceConfig {
   ];
 
   return {
-    expression: expressions[abs % expressions.length],
+    expression: expressions[abs % expressions.length] || 'happy',
     glasses: (abs % 4) === 0,
     blush: true,
     freckles: (abs % 5) === 0,
@@ -39,7 +41,7 @@ export function getDerivedCuteFace(name: string): CuteFaceConfig {
 }
 
 export const CuteFace: React.FC<CuteFaceProps> = ({
-  name,
+  name = 'Player',
   config,
   size = 100,
   isHovered = false,
@@ -47,8 +49,9 @@ export const CuteFace: React.FC<CuteFaceProps> = ({
   circleColor,
   showCircleBackground = false,
 }) => {
+  const safeName = typeof name === 'string' && name.trim() ? name.trim() : 'Player';
   const finalConfig: CuteFaceConfig = {
-    ...getDerivedCuteFace(name),
+    ...getDerivedCuteFace(safeName),
     ...(config || {}),
   };
 
@@ -59,16 +62,50 @@ export const CuteFace: React.FC<CuteFaceProps> = ({
     blush = true,
   } = finalConfig;
 
-  // Charcoal ink & graphite pencil tones for authentic hand-drawn feel
-  const inkColor = '#292524'; // Stone-800 charcoal ink
-  const pencilColor = '#78716c'; // Stone-500 graphite pencil
-  const blushChalk = '#f472b6'; // Soft pastel pink chalk
-  const tonguePastel = '#fca5a5'; // Soft pastel coral pink
-  const mouthInk = '#44403c'; // Dark charcoal interior
+  // Derive stable hair & eye colors from name hash
+  let hash = 0;
+  for (let i = 0; i < safeName.length; i++) {
+    hash = safeName.charCodeAt(i) + ((hash << 5) - hash);
+    hash |= 0;
+  }
+  const abs = Math.abs(hash) || 0;
+
+  const hairPalette = [
+    { base: '#4a2f13', shadow: '#311e0b', highlight: '#6a4723' }, // Brown (Steve)
+    { base: '#b55222', shadow: '#7e3512', highlight: '#d96c34' }, // Ginger (Alex)
+    { base: '#1e1c1b', shadow: '#0d0c0c', highlight: '#333130' }, // Black
+    { base: '#d8aa42', shadow: '#9c7521', highlight: '#eed178' }, // Blonde
+    { base: '#7c3f58', shadow: '#502336', highlight: '#a35777' }, // Plum / Violet
+    { base: '#3b5a7a', shadow: '#22364c', highlight: '#547ea8' }, // Blue
+  ];
+  const hair = hairPalette[abs % hairPalette.length] || hairPalette[0];
+
+  const eyePalette = [
+    { pupil: '#2c478a', iris: '#4d75d6' }, // Steve Blue
+    { pupil: '#246b36', iris: '#42a35c' }, // Alex Green
+    { pupil: '#5a3012', iris: '#82481f' }, // Warm Brown
+    { pupil: '#4a2663', iris: '#7940a1' }, // Ender Purple
+    { pupil: '#1b1b1b', iris: '#383838' }, // Charcoal
+  ];
+  const eye = eyePalette[Math.floor(abs / 7) % eyePalette.length] || eyePalette[0];
+
+  // Skin tone
+  const skinPalette = [
+    { base: '#f0be92', shadow: '#d69d6e', dark: '#b77d50' }, // Medium Peach
+    { base: '#f7d2b2', shadow: '#e0b28e', dark: '#c2926e' }, // Fair
+    { base: '#c98a58', shadow: '#aa6c3d', dark: '#8a4f23' }, // Tan
+    { base: '#8d5732', shadow: '#6d3f20', dark: '#522c12' }, // Deep
+    { base: '#ffd9b3', shadow: '#e5b98f', dark: '#bf946b' }, // Rose fair
+  ];
+  const skin = skinPalette[Math.floor(abs / 13) % skinPalette.length] || skinPalette[0];
+
+  // Scale: 16x16 grid for high-fidelity Minecraft skin face
+  // 0 to 15 coordinates (each unit is 6.25px in a 100x100 viewBox)
+  const U = 6.25;
 
   return (
     <div
-      className={`relative select-none pointer-events-none transition-transform duration-200 ${
+      className={`relative select-none pointer-events-none transition-transform duration-100 ${
         isHovered ? 'scale-105' : 'scale-100'
       } ${className}`}
       style={{ width: size, height: size }}
@@ -78,352 +115,178 @@ export const CuteFace: React.FC<CuteFaceProps> = ({
         className="w-full h-full"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        shapeRendering="crispEdges"
       >
-        <defs>
-          {/* Soft chalk / colored pencil smudge filter */}
-          <filter id="pastel-chalk-smudge" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2.2" />
-          </filter>
-
-          {/* Paper texture overlay pattern for watercolor / crayon fill */}
-          <radialGradient id="paper-wash-soft" cx="45%" cy="40%" r="60%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.25" />
-            <stop offset="80%" stopColor="#ffffff" stopOpacity="0" />
-            <stop offset="100%" stopColor="#292524" stopOpacity="0.08" />
-          </radialGradient>
-        </defs>
-
-        {/* --- OPTIONAL HANDDRAWN CIRCLE BACKGROUND (Organic Sketch Strokes) --- */}
+        {/* Optional Item Frame / Block background */}
         {showCircleBackground && (
           <g>
-            {/* Base pastel watercolor wash with organic hand-drawn wobble */}
-            <path
-              d="M 50 4.5 C 75.5 3.8, 96.2 24.2, 95.8 49.5 C 95.4 75.2, 75.8 95.8, 50.2 95.4 C 24.5 95, 4.2 74.8, 4.5 49.8 C 4.8 24.5, 24.8 5.2, 50 4.5 Z"
-              fill={circleColor || '#fbcfe8'}
-            />
-            {/* Paper wash shading */}
-            <path
-              d="M 50 4.5 C 75.5 3.8, 96.2 24.2, 95.8 49.5 C 95.4 75.2, 75.8 95.8, 50.2 95.4 C 24.5 95, 4.2 74.8, 4.5 49.8 C 4.8 24.5, 24.8 5.2, 50 4.5 Z"
-              fill="url(#paper-wash-soft)"
-            />
-
-            {/* Secondary light graphite pencil sketch stroke (imperfect second pass) */}
-            <path
-              d="M 50.5 5 C 74.8 4.2, 95 25.5, 94.8 50 C 94.6 74.5, 74.2 94.5, 49.5 94.8 C 25.2 95.1, 5.2 75.2, 5 50.5 C 4.8 25.8, 25.5 5.8, 50.5 5"
-              stroke={pencilColor}
-              strokeWidth="1.2"
-              strokeLinecap="round"
-              strokeDasharray="95 3 45 2"
-              opacity="0.6"
-            />
-
-            {/* Primary charcoal ink stroke (handdrawn wobble line) */}
-            <path
-              d="M 50 4.5 C 75.5 3.8, 96.2 24.2, 95.8 49.5 C 95.4 75.2, 75.8 95.8, 50.2 95.4 C 24.5 95, 4.2 74.8, 4.5 49.8 C 4.8 24.5, 24.8 5.2, 50 4.5 Z"
-              stroke={inkColor}
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            {/* Minecraft Item Frame Bevel / Block */}
+            <rect x="0" y="0" width="100" height="100" fill="#000000" />
+            <rect x="3" y="3" width="94" height="94" fill="#382212" />
+            {/* Inner frame */}
+            <rect x="6" y="6" width="88" height="88" fill={circleColor || '#85542b'} />
+            {/* Recessed slot backing */}
+            <rect x="10" y="10" width="80" height="80" fill="#1b1816" />
+            {/* Highlight & Shadow edges */}
+            <rect x="3" y="3" width="94" height="3" fill="#664426" />
+            <rect x="3" y="3" width="3" height="94" fill="#664426" />
+            <rect x="3" y="94" width="94" height="3" fill="#1f1207" />
+            <rect x="94" y="3" width="3" height="94" fill="#1f1207" />
           </g>
         )}
 
-        {/* --- HANDDRAWN EYEBROWS --- */}
-        {expression === 'wink' ? (
-          <g stroke={inkColor} strokeWidth="2.2" strokeLinecap="round">
-            {/* Left normal eyebrow with slight organic curve */}
-            <path d="M 28 33 Q 35 29 42 32" />
-            {/* Right raised winking eyebrow */}
-            <path d="M 57 29 Q 64 24 72 29" />
-          </g>
-        ) : expression === 'sparkle' || isHovered ? (
-          <g stroke={inkColor} strokeWidth="2.4" strokeLinecap="round">
-            {/* Expressive raised arches */}
-            <path d="M 27 30 Q 35 25 43 29" />
-            <path d="M 57 29 Q 65 25 73 30" />
-          </g>
-        ) : expression === 'cool' ? (
-          <g stroke={inkColor} strokeWidth="2.2" strokeLinecap="round">
-            {/* Relaxed slightly angled brows */}
-            <path d="M 28 32 Q 35 31 42 33" />
-            <path d="M 58 33 Q 65 31 72 32" />
-          </g>
-        ) : expression === 'grin' ? (
-          <g stroke={inkColor} strokeWidth="2.3" strokeLinecap="round">
-            {/* Cheerful high brows */}
-            <path d="M 28 29 Q 35 24 43 28" />
-            <path d="M 57 28 Q 65 24 72 29" />
-          </g>
-        ) : (
-          <g stroke={inkColor} strokeWidth="2.2" strokeLinecap="round">
-            {/* Natural gentle doodle eyebrows */}
-            <path d="M 29 33 Q 35 29 42 32" />
-            <path d="M 58 32 Q 65 29 71 33" />
-          </g>
-        )}
+        {/* --- MINECRAFT 8x8 / 16x16 PLAYER HEAD --- */}
+        <g transform={showCircleBackground ? 'translate(14, 14) scale(0.72)' : 'translate(6, 6) scale(0.88)'}>
+          {/* Black Outer Pixel Border of Head */}
+          <rect x="0" y="0" width="100" height="100" fill="#000000" />
 
-        {/* --- HANDDRAWN EYES --- */}
-        {expression === 'cool' ? (
-          // Hand-drawn sunglasses with ink pen outlines and pencil glare lines
-          <g>
-            {/* Left lens */}
-            <path
-              d="M 23 39 C 23 39, 44 38.5, 44.5 39 C 45 47, 42 54, 34 54 C 26 54, 23 48, 23 39 Z"
-              fill={inkColor}
-              stroke={inkColor}
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-            {/* Right lens */}
-            <path
-              d="M 55.5 39 C 56 38.5, 77 39, 77 39 C 77 48, 74 54, 66 54 C 58 54, 55 47, 55.5 39 Z"
-              fill={inkColor}
-              stroke={inkColor}
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-            {/* Hand-drawn bridge */}
-            <path d="M 44.5 42 Q 50 39.5 55.5 42" stroke={inkColor} strokeWidth="2.6" strokeLinecap="round" />
-            {/* Lens white glare strokes */}
-            <path d="M 28 42 L 32 42 L 29 50" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" opacity="0.85" />
-            <path d="M 60 42 L 64 42 L 61 50" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" opacity="0.85" />
-          </g>
-        ) : expression === 'wink' ? (
-          <g>
-            {/* Left Eye: Hand-drawn round ink eye with charming white highlight */}
-            <path
-              d="M 35 38.5 C 38.5 38.5, 41 41, 41 44.5 C 41 48, 38.5 50.5, 35 50.5 C 31.5 50.5, 29 48, 29 44.5 C 29 41, 31.5 38.5, 35 38.5 Z"
-              fill={inkColor}
-            />
-            {/* White paper shine dot */}
-            <circle cx="33.5" cy="42.5" r="2.2" fill="#ffffff" />
-            <circle cx="37" cy="46" r="1.1" fill="#ffffff" />
+          {/* Head Base Skin (8x8 cells, each 12.5 x 12.5) */}
+          <rect x="6" y="6" width="88" height="88" fill={skin.base} />
 
-            {/* Right Eye: Hand-sketched winking arch with charming flick */}
-            <path
-              d="M 57 45 Q 64 51.5 71 44.5"
-              stroke={inkColor}
-              strokeWidth="3.2"
-              strokeLinecap="round"
-            />
-            {/* Sketched lash flicks */}
-            <path d="M 70 44 L 74 41.5" stroke={inkColor} strokeWidth="2.2" strokeLinecap="round" />
-            <path d="M 71 47 L 75 46" stroke={inkColor} strokeWidth="1.8" strokeLinecap="round" />
-          </g>
-        ) : expression === 'sparkle' ? (
-          <g>
-            {/* Left Eye: Hand-drawn doodle eye with 4-point star shine */}
-            <path
-              d="M 35 38.5 C 38.5 38.5, 41 41, 41 44.5 C 41 48, 38.5 50.5, 35 50.5 C 31.5 50.5, 29 48, 29 44.5 C 29 41, 31.5 38.5, 35 38.5 Z"
-              fill={inkColor}
-            />
-            {/* Star sparkle shine */}
-            <path
-              d="M 34.5 41 L 35.5 39.5 L 36.5 41 L 38 42 L 36.5 43 L 35.5 44.5 L 34.5 43 L 33 42 Z"
-              fill="#ffffff"
-            />
-            <circle cx="37" cy="46.5" r="1.1" fill="#ffffff" />
+          {/* Skin Shading on bottom and sides */}
+          <rect x="6" y="78" width="88" height="16" fill={skin.shadow} />
+          <rect x="6" y="6" width="6" height="88" fill={skin.shadow} opacity="0.6" />
+          <rect x="88" y="6" width="6" height="88" fill={skin.dark} opacity="0.6" />
 
-            {/* Right Eye: Hand-drawn doodle eye with 4-point star shine */}
-            <path
-              d="M 65 38.5 C 68.5 38.5, 71 41, 71 44.5 C 71 48, 68.5 50.5, 65 50.5 C 61.5 50.5, 59 48, 59 44.5 C 59 41, 61.5 38.5, 65 38.5 Z"
-              fill={inkColor}
-            />
-            <path
-              d="M 64.5 41 L 65.5 39.5 L 66.5 41 L 68 42 L 66.5 43 L 65.5 44.5 L 64.5 43 L 63 42 Z"
-              fill="#ffffff"
-            />
-            <circle cx="67" cy="46.5" r="1.1" fill="#ffffff" />
-          </g>
-        ) : expression === 'warm' || expression === 'gentle' ? (
-          // Adorable hand-sketched happy smiling eyes ( ^  ^ )
-          <g stroke={inkColor} strokeWidth="3" strokeLinecap="round">
-            <path d="M 28 46 Q 35 38.5 42 46" />
-            <path d="M 58 46 Q 65 38.5 72 46" />
-            {/* Tiny sketched lash ticks */}
-            <path d="M 27 46 L 25 48" strokeWidth="1.8" />
-            <path d="M 73 46 L 75 48" strokeWidth="1.8" />
-          </g>
-        ) : expression === 'grin' ? (
-          // Joyful closed squinting doodle eyes ( > < )
-          <g stroke={inkColor} strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M 27 42 L 36 47 L 27 52" />
-            <path d="M 73 42 L 64 47 L 73 52" />
-          </g>
-        ) : expression === 'cheeky' ? (
-          // Cheeky wink + open eye
-          <g>
-            <path
-              d="M 35 38.5 C 38.5 38.5, 41 41, 41 44.5 C 41 48, 38.5 50.5, 35 50.5 C 31.5 50.5, 29 48, 29 44.5 C 29 41, 31.5 38.5, 35 38.5 Z"
-              fill={inkColor}
-            />
-            <circle cx="33.5" cy="42.5" r="2.2" fill="#ffffff" />
+          {/* --- HAIR LAYER (Helmet/Hair) --- */}
+          {/* Top hair block */}
+          <rect x="6" y="6" width="88" height="26" fill={hair.base} />
+          <rect x="6" y="6" width="88" height="8" fill={hair.highlight} />
+          {/* Sideburns */}
+          <rect x="6" y="32" width="16" height="28" fill={hair.base} />
+          <rect x="78" y="32" width="16" height="28" fill={hair.shadow} />
 
-            {/* Winking arch */}
-            <path
-              d="M 58 45 Q 65 51 72 44.5"
-              stroke={inkColor}
-              strokeWidth="3.2"
-              strokeLinecap="round"
-            />
-            <path d="M 71 44 L 75 42" stroke={inkColor} strokeWidth="2.2" strokeLinecap="round" />
-          </g>
-        ) : (
-          // Default Happy: Natural hand-drawn ink dots with paper shine
-          <g>
-            <path
-              d="M 35 39 C 38.2 39, 40.8 41.4, 40.8 44.5 C 40.8 47.8, 38.2 50.2, 35 50.2 C 31.8 50.2, 29.2 47.8, 29.2 44.5 C 29.2 41.4, 31.8 39, 35 39 Z"
-              fill={inkColor}
-            />
-            <circle cx="33.5" cy="42.5" r="2" fill="#ffffff" />
-            <circle cx="37" cy="46" r="1" fill="#ffffff" />
+          {/* Bangs Variations based on expression/hash */}
+          {(abs % 3 === 0) && (
+            <>
+              <rect x="22" y="32" width="16" height="14" fill={hair.base} />
+              <rect x="54" y="32" width="24" height="10" fill={hair.base} />
+            </>
+          )}
+          {(abs % 3 === 1) && (
+            <>
+              <rect x="22" y="32" width="28" height="12" fill={hair.base} />
+              <rect x="60" y="32" width="18" height="16" fill={hair.base} />
+            </>
+          )}
+          {(abs % 3 === 2) && (
+            <>
+              <rect x="22" y="32" width="18" height="8" fill={hair.base} />
+              <rect x="40" y="32" width="20" height="14" fill={hair.highlight} />
+              <rect x="60" y="32" width="18" height="8" fill={hair.base} />
+            </>
+          )}
 
-            <path
-              d="M 65 39 C 68.2 39, 70.8 41.4, 70.8 44.5 C 70.8 47.8, 68.2 50.2, 65 50.2 C 61.8 50.2, 59.2 47.8, 59.2 44.5 C 59.2 41.4, 61.8 39, 65 39 Z"
-              fill={inkColor}
-            />
-            <circle cx="63.5" cy="42.5" r="2" fill="#ffffff" />
-            <circle cx="67" cy="46" r="1" fill="#ffffff" />
-          </g>
-        )}
+          {/* --- EYES --- */}
+          {expression === 'wink' ? (
+            <>
+              {/* Left eye open */}
+              <rect x="20" y="46" width="18" height="14" fill="#ffffff" />
+              <rect x="28" y="48" width="10" height="12" fill={eye.iris} />
+              <rect x="32" y="52" width="6" height="8" fill={eye.pupil} />
+              <rect x="28" y="48" width="4" height="4" fill="#ffffff" />
+              {/* Right eye wink (closed pixel line) */}
+              <rect x="62" y="52" width="18" height="5" fill="#201a15" />
+            </>
+          ) : expression === 'cool' ? (
+            <>
+              {/* Pixel Sunglasses (Deal With It sunglasses!) */}
+              <rect x="14" y="44" width="72" height="16" fill="#050505" />
+              <rect x="20" y="46" width="22" height="12" fill="#1b1c20" />
+              <rect x="58" y="46" width="22" height="12" fill="#1b1c20" />
+              {/* White reflection shine */}
+              <rect x="22" y="48" width="4" height="4" fill="#ffffff" />
+              <rect x="26" y="52" width="4" height="4" fill="#ffffff" />
+              <rect x="60" y="48" width="4" height="4" fill="#ffffff" />
+              <rect x="64" y="52" width="4" height="4" fill="#ffffff" />
+            </>
+          ) : expression === 'sparkle' ? (
+            <>
+              {/* Sparkle starry eyes */}
+              <rect x="18" y="44" width="22" height="16" fill="#ffffff" />
+              <rect x="24" y="44" width="10" height="16" fill="#55ffff" />
+              <rect x="28" y="48" width="6" height="8" fill="#ffffff" />
+              <rect x="60" y="44" width="22" height="16" fill="#ffffff" />
+              <rect x="66" y="44" width="10" height="16" fill="#55ffff" />
+              <rect x="70" y="48" width="6" height="8" fill="#ffffff" />
+            </>
+          ) : (
+            <>
+              {/* Standard Classic Minecraft Eyes (Steve / Alex style) */}
+              {/* Left Eye */}
+              <rect x="18" y="46" width="20" height="14" fill="#ffffff" />
+              <rect x="26" y="46" width="12" height="14" fill={eye.iris} />
+              <rect x="30" y="50" width="8" height="10" fill={eye.pupil} />
+              <rect x="26" y="48" width="4" height="4" fill="#ffffff" />
 
-        {/* --- HANDDRAWN GLASSES (wireframe spectacles with pencil bridge) --- */}
-        {glasses && expression !== 'cool' && (
-          <g stroke={inkColor} strokeWidth="2" fill="none">
-            {/* Left wireframe circle with handdrawn wobble */}
-            <path
-              d="M 35 34 C 41 34, 45.5 38.5, 45.5 44.5 C 45.5 50.5, 40.8 55, 35 55 C 29 55, 24.5 50.5, 24.5 44.5 C 24.5 38.5, 29 34, 35 34 Z"
-              fill="#ffffff"
-              fillOpacity="0.25"
-            />
-            {/* Right wireframe circle */}
-            <path
-              d="M 65 34 C 71 34, 75.5 38.5, 75.5 44.5 C 75.5 50.5, 70.8 55, 65 55 C 59 55, 54.5 50.5, 54.5 44.5 C 54.5 38.5, 59 34, 65 34 Z"
-              fill="#ffffff"
-              fillOpacity="0.25"
-            />
-            {/* Bridge */}
-            <path d="M 45.5 44 Q 50 41.5 54.5 44" strokeLinecap="round" />
-            {/* Temples */}
-            <path d="M 24.5 43.5 L 18 42" strokeLinecap="round" />
-            <path d="M 75.5 43.5 L 82 42" strokeLinecap="round" />
-          </g>
-        )}
+              {/* Right Eye */}
+              <rect x="62" y="46" width="20" height="14" fill="#ffffff" />
+              <rect x="62" y="46" width="12" height="14" fill={eye.iris} />
+              <rect x="62" y="50" width="8" height="10" fill={eye.pupil} />
+              <rect x="68" y="48" width="4" height="4" fill="#ffffff" />
+            </>
+          )}
 
-        {/* --- SOFT PASTEL CHALK BLUSH + SKETCH HATCH LINES --- */}
-        {blush && (
-          <g>
-            {/* Left cheek pastel chalk smudge */}
-            <ellipse
-              cx="23"
-              cy="53"
-              rx="7"
-              ry="4.5"
-              fill={blushChalk}
-              opacity={isHovered ? 0.55 : 0.38}
-              filter="url(#pastel-chalk-smudge)"
-            />
-            {/* Handdrawn pencil blush tick marks // */}
-            <g stroke={pencilColor} strokeWidth="1.3" strokeLinecap="round" opacity="0.6">
-              <line x1="20" y1="55" x2="23" y2="51" />
-              <line x1="24" y1="55" x2="27" y2="51" />
+          {/* Optional Glasses if not cool shades */}
+          {glasses && expression !== 'cool' && (
+            <g>
+              <rect x="14" y="42" width="28" height="22" fill="none" stroke="#222222" strokeWidth="4" />
+              <rect x="58" y="42" width="28" height="22" fill="none" stroke="#222222" strokeWidth="4" />
+              <rect x="42" y="48" width="16" height="4" fill="#222222" />
             </g>
+          )}
 
-            {/* Right cheek pastel chalk smudge */}
-            <ellipse
-              cx="77"
-              cy="53"
-              rx="7"
-              ry="4.5"
-              fill={blushChalk}
-              opacity={isHovered ? 0.55 : 0.38}
-              filter="url(#pastel-chalk-smudge)"
-            />
-            {/* Handdrawn pencil blush tick marks // */}
-            <g stroke={pencilColor} strokeWidth="1.3" strokeLinecap="round" opacity="0.6">
-              <line x1="74" y1="55" x2="77" y2="51" />
-              <line x1="78" y1="55" x2="81" y2="51" />
+          {/* --- BLUSH --- */}
+          {blush && (
+            <g>
+              <rect x="16" y="62" width="14" height="8" fill="#f472b6" opacity="0.85" />
+              <rect x="70" y="62" width="14" height="8" fill="#f472b6" opacity="0.85" />
             </g>
-          </g>
-        )}
+          )}
 
-        {/* --- DELICATE HANDDRAWN FRECKLES --- */}
-        {freckles && (
-          <g fill={pencilColor} opacity="0.75">
-            <circle cx="26" cy="51" r="0.9" />
-            <circle cx="29" cy="53" r="0.9" />
-            <circle cx="25" cy="55" r="0.8" />
-            <circle cx="48" cy="52" r="0.7" />
-            <circle cx="52" cy="53" r="0.8" />
-            <circle cx="71" cy="53" r="0.9" />
-            <circle cx="74" cy="51" r="0.9" />
-            <circle cx="75" cy="55" r="0.8" />
-          </g>
-        )}
+          {/* --- FRECKLES --- */}
+          {freckles && (
+            <g fill="#9a582b">
+              <rect x="24" y="62" width="4" height="4" />
+              <rect x="34" y="64" width="4" height="4" />
+              <rect x="62" y="64" width="4" height="4" />
+              <rect x="72" y="62" width="4" height="4" />
+            </g>
+          )}
 
-        {/* --- NATURAL HANDDRAWN MOUTH --- */}
-        {expression === 'grin' || expression === 'sparkle' || isHovered ? (
-          // Joyful open doodle mouth with hand-drawn charcoal outline and pastel pink tongue
-          <g>
-            <path
-              d="M 39 56.5 Q 50 71 61 56.5 Z"
-              fill={mouthInk}
-              stroke={inkColor}
-              strokeWidth="2.2"
-              strokeLinejoin="round"
-            />
-            {/* Cute pastel tongue */}
-            <path
-              d="M 43 62 Q 50 58 57 62 Q 50 69 43 62 Z"
-              fill={tonguePastel}
-            />
-            {/* Dimple ticks at mouth corners */}
-            <path d="M 37.5 55.5 L 39 58" stroke={inkColor} strokeWidth="1.8" strokeLinecap="round" />
-            <path d="M 62.5 55.5 L 61 58" stroke={inkColor} strokeWidth="1.8" strokeLinecap="round" />
-          </g>
-        ) : expression === 'cheeky' ? (
-          // Cheeky cat-mouth / wavy smile with little tongue sticking out :P
-          <g>
-            <path
-              d="M 39 57.5 Q 44.5 62.5 49.5 58.5 Q 54.5 62.5 60.5 57.5"
-              stroke={inkColor}
-              strokeWidth="2.4"
-              strokeLinecap="round"
-            />
-            {/* Little pink tongue poking out */}
-            <path
-              d="M 48 59.5 Q 50.5 67 53 59.5 Z"
-              fill={tonguePastel}
-              stroke={inkColor}
-              strokeWidth="1.4"
-              strokeLinejoin="round"
-            />
-          </g>
-        ) : expression === 'cool' ? (
-          // Subtle wry doodle smirk with dimple
-          <g>
-            <path
-              d="M 43 59.5 Q 52 61.5 59 56.5"
-              stroke={inkColor}
-              strokeWidth="2.4"
-              strokeLinecap="round"
-            />
-            <path d="M 58 55 L 60 58" stroke={inkColor} strokeWidth="1.8" strokeLinecap="round" />
-          </g>
-        ) : (
-          // Sweet natural curved doodle smile with corner dimples
-          <g>
-            <path
-              d="M 41 57.5 Q 50 65.5 59 57.5"
-              stroke={inkColor}
-              strokeWidth="2.4"
-              strokeLinecap="round"
-            />
-            {/* Subtle sketched dimple ticks */}
-            <path d="M 39.5 56.5 L 41 58.5" stroke={inkColor} strokeWidth="1.6" strokeLinecap="round" />
-            <path d="M 60.5 56.5 L 59 58.5" stroke={inkColor} strokeWidth="1.6" strokeLinecap="round" />
-          </g>
-        )}
+          {/* --- NOSE --- */}
+          <rect x="44" y="58" width="12" height="8" fill={skin.dark} />
+
+          {/* --- MOUTH --- */}
+          {expression === 'grin' || expression === 'happy' ? (
+            <g>
+              {/* Wide smile / open mouth */}
+              <rect x="36" y="70" width="28" height="8" fill="#421a15" />
+              <rect x="40" y="74" width="20" height="4" fill="#ff708f" />
+              {/* White teeth row */}
+              <rect x="38" y="70" width="24" height="3" fill="#ffffff" />
+            </g>
+          ) : expression === 'cheeky' ? (
+            <g>
+              {/* Tongue sticking out */}
+              <rect x="38" y="70" width="24" height="6" fill="#381b16" />
+              <rect x="46" y="74" width="12" height="8" fill="#ff6b8b" />
+              <rect x="50" y="80" width="4" height="4" fill="#d94b6a" />
+            </g>
+          ) : expression === 'gentle' || expression === 'warm' ? (
+            <g>
+              {/* Gentle smile */}
+              <rect x="40" y="72" width="20" height="5" fill="#592b1d" />
+              <rect x="36" y="70" width="5" height="4" fill="#592b1d" />
+              <rect x="59" y="70" width="5" height="4" fill="#592b1d" />
+            </g>
+          ) : (
+            <g>
+              {/* Classic Steve/Alex goatee/smile block */}
+              <rect x="40" y="72" width="20" height="6" fill="#5c2e1f" />
+            </g>
+          )}
+        </g>
       </svg>
     </div>
   );

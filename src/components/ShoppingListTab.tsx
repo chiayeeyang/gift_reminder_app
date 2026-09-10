@@ -8,8 +8,6 @@ import {
   Check,
   Tag,
   Sparkles,
-  ExternalLink,
-  CheckCircle2,
 } from 'lucide-react';
 
 export const ShoppingListTab: React.FC = () => {
@@ -90,94 +88,94 @@ export const ShoppingListTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 font-pixel">
       {/* Header & Print toolbar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-5 bg-white rounded-2xl border border-stone-200 shadow-xs print:hidden">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 mc-panel border-2 border-black print:hidden">
         <div>
-          <h2 className="text-lg font-bold text-stone-900 flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-stone-700" />
-            Shopping & Craft Materials Checklist
+          <h2 className="text-sm font-bold text-white mc-text-shadow font-mc flex items-center gap-2">
+            <ShoppingCart className="w-4 h-4 text-[#ffea75]" />
+            MERCHANT TRADE & INGREDIENTS MANIFEST
           </h2>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Everything you need to buy or source across both retail gifts and DIY projects.
+          <p className="text-xs text-[#a3a4ab] mt-0.5">
+            Everything you need to trade with villagers or gather for DIY crafting recipes.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyText}
-            className="px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            className="mc-button px-3 py-1 text-xs flex items-center gap-1.5"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? 'Copied List!' : 'Copy to Clipboard'}
+            {copied ? <Check className="w-3.5 h-3.5 text-[#55ff55]" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? 'Copied Manifest!' : 'Copy to Clipboard'}
           </button>
           <button
             onClick={handlePrint}
-            className="px-3.5 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
+            className="mc-button px-3.5 py-1 text-xs flex items-center gap-1.5"
           >
-            <Printer className="w-3.5 h-3.5" /> Print Checklist
+            <Printer className="w-3.5 h-3.5" /> Print Manifest
           </button>
         </div>
       </div>
 
       {/* Summary Banner */}
-      <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between">
+      <div className="p-3.5 mc-panel-dark border-2 border-black flex items-center justify-between">
         <div>
-          <span className="text-xs font-bold text-amber-800 uppercase tracking-wider">
-            Total Estimated Procurement Budget
+          <span className="font-mc text-[9px] text-[#ffea75] uppercase tracking-wider block mc-text-shadow">
+            TOTAL PROCUREMENT EMERALDS NEEDED
           </span>
-          <div className="text-2xl font-extrabold text-amber-950 mt-0.5">
+          <div className="text-xl font-bold text-[#55ff55] font-pixel mt-0.5">
             {formatCurrency(totalProcurementCost)}
           </div>
         </div>
-        <div className="text-right text-xs text-amber-900 font-medium">
-          <div>{itemsToBuy.length} Gifts to purchase</div>
-          <div>{suppliesNeeded.length} Craft materials to gather</div>
+        <div className="text-right text-xs text-[#a3a4ab]">
+          <div>{itemsToBuy.length} Merchant Trades to acquire</div>
+          <div>{suppliesNeeded.length} Recipe Ingredients to gather</div>
         </div>
       </div>
 
       {/* Section 1: Retail / Bought Gifts */}
-      <div className="p-6 bg-white rounded-2xl border border-stone-200 shadow-xs space-y-4">
-        <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-          <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
-            <Tag className="w-4 h-4 text-amber-600" />
-            Retail Gifts to Purchase ({itemsToBuy.length})
+      <div className="p-4 mc-panel border-2 border-black space-y-3">
+        <div className="flex items-center justify-between border-b-2 border-[#3c3d44] pb-2">
+          <h3 className="font-mc text-[10px] text-white uppercase tracking-wider flex items-center gap-2 mc-text-shadow">
+            <Tag className="w-3.5 h-3.5 text-[#ffea75]" />
+            MERCHANT TRADES TO BUY ({itemsToBuy.length})
           </h3>
-          <span className="text-xs text-stone-500 font-medium">Click checkbox once purchased</span>
+          <span className="text-[11px] text-[#a3a4ab]">Check box once acquired</span>
         </div>
 
         {itemsToBuy.length === 0 ? (
-          <p className="text-xs text-stone-400 py-3 italic">
-            🎉 All scheduled retail gifts have already been purchased!
+          <p className="text-xs text-[#a3a4ab] py-2">
+            🎉 All scheduled merchant trades have already been acquired!
           </p>
         ) : (
-          <div className="divide-y divide-stone-100">
+          <div className="space-y-1.5">
             {itemsToBuy.map((gift) => {
               const recipient = people.find((p) => p.id === gift.recipientId);
 
               return (
                 <div
                   key={gift.id}
-                  className="py-3 flex items-center justify-between gap-4 hover:bg-stone-50/70 px-2 rounded-xl transition-colors"
+                  className="p-2.5 mc-panel-dark border border-black flex items-center justify-between gap-3"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <input
                       type="checkbox"
                       checked={false}
                       onChange={() => updateGift(gift.id, { status: 'purchased' })}
-                      className="w-4 h-4 rounded border-stone-300 text-stone-900 focus:ring-stone-900 cursor-pointer"
+                      className="accent-[#2b7730] w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-stone-900 text-sm">{gift.title}</div>
-                      <div className="text-xs text-stone-500 mt-0.5">
+                      <div className="font-bold text-white text-xs mc-text-shadow">{gift.title}</div>
+                      <div className="text-[11px] text-[#a3a4ab] mt-0.5">
                         For:{' '}
-                        <strong className="text-stone-700">
+                        <strong className="text-white">
                           {recipient ? recipient.name : 'Unassigned'}
                         </strong>{' '}
-                        • Occasion: <span className="capitalize">{gift.customOccasionName || gift.occasion}</span>
+                        • Occasion: <span className="capitalize text-[#ffea75]">{gift.customOccasionName || gift.occasion}</span>
                         {gift.storeOrUrl && (
                           <span className="ml-2">
-                            • Store: <span className="text-blue-600 underline">{gift.storeOrUrl}</span>
+                            • Merchant: <span className="text-[#55ffff] underline">{gift.storeOrUrl}</span>
                           </span>
                         )}
                       </div>
@@ -185,7 +183,7 @@ export const ShoppingListTab: React.FC = () => {
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className="font-bold text-stone-900 text-sm">
+                    <span className="font-bold text-[#ffea75] text-xs">
                       {formatCurrency(gift.estimatedPrice)}
                     </span>
                   </div>
@@ -197,44 +195,44 @@ export const ShoppingListTab: React.FC = () => {
       </div>
 
       {/* Section 2: Crafting Materials & Supplies */}
-      <div className="p-6 bg-white rounded-2xl border border-stone-200 shadow-xs space-y-4">
-        <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-          <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-rose-600" />
-            Handmade Craft Supplies to Buy ({suppliesNeeded.length})
+      <div className="p-4 mc-panel border-2 border-black space-y-3">
+        <div className="flex items-center justify-between border-b-2 border-[#3c3d44] pb-2">
+          <h3 className="font-mc text-[10px] text-white uppercase tracking-wider flex items-center gap-2 mc-text-shadow">
+            <Sparkles className="w-3.5 h-3.5 text-[#55ff55]" />
+            RECIPE INGREDIENTS TO MINE / GATHER ({suppliesNeeded.length})
           </h3>
-          <span className="text-xs text-stone-500 font-medium">Click checkbox once bought</span>
+          <span className="text-[11px] text-[#a3a4ab]">Check box once gathered</span>
         </div>
 
         {suppliesNeeded.length === 0 ? (
-          <p className="text-xs text-stone-400 py-3 italic">
-            🧶 All required craft materials and supplies are ready!
+          <p className="text-xs text-[#a3a4ab] py-2">
+            🧶 All required craft ingredients and supplies are ready in chest!
           </p>
         ) : (
-          <div className="divide-y divide-stone-100">
+          <div className="space-y-1.5">
             {suppliesNeeded.map((sup) => (
               <div
                 key={sup.supplyId}
-                className="py-3 flex items-center justify-between gap-4 hover:bg-stone-50/70 px-2 rounded-xl transition-colors"
+                className="p-2.5 mc-panel-dark border border-black flex items-center justify-between gap-3"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   <input
                     type="checkbox"
                     checked={false}
                     onChange={() => toggleSupplyPurchased(sup.giftId, sup.supplyId)}
-                    className="w-4 h-4 rounded border-stone-300 text-rose-600 focus:ring-rose-500 cursor-pointer"
+                    className="accent-[#2b7730] w-4 h-4 cursor-pointer"
                   />
                   <div>
-                    <div className="font-bold text-stone-900 text-sm">{sup.supplyName}</div>
-                    <div className="text-xs text-stone-500 mt-0.5">
-                      For Craft:{' '}
-                      <strong className="text-stone-700">{sup.giftTitle}</strong> ({sup.recipientName})
+                    <div className="font-bold text-white text-xs mc-text-shadow">{sup.supplyName}</div>
+                    <div className="text-[11px] text-[#a3a4ab] mt-0.5">
+                      For Recipe:{' '}
+                      <strong className="text-white">{sup.giftTitle}</strong> ({sup.recipientName})
                     </div>
                   </div>
                 </div>
 
                 <div className="text-right shrink-0">
-                  <span className="font-bold text-stone-900 text-sm">${sup.cost.toFixed(2)}</span>
+                  <span className="font-bold text-[#55ff55] text-xs">${sup.cost.toFixed(2)}</span>
                 </div>
               </div>
             ))}

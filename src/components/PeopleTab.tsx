@@ -1,21 +1,15 @@
 import React, { useState } from 'react';
 import { useGifts } from '../context/GiftContext';
-import { Person, Relationship } from '../types';
+import { Person } from '../types';
 import { calculateDaysUntil, formatCurrency, formatRelativeDays } from '../utils/giftHelpers';
 import { CuteFace } from './CuteFace';
 import {
-  Users,
-  Heart,
   Plus,
   Edit2,
   Trash2,
   Calendar,
   Sparkles,
-  Gift,
-  DollarSign,
   Shirt,
-  Info,
-  Check,
 } from 'lucide-react';
 
 interface PeopleTabProps {
@@ -45,70 +39,70 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Circle Filter Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white rounded-2xl border border-stone-200 shadow-xs">
+    <div className="space-y-6 font-pixel">
+      {/* Player Filter Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 mc-panel border-2 border-black">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider mr-1">
-            Circle:
+          <span className="font-mc text-[10px] text-[#80ff20] mr-1 mc-text-shadow">
+            PLAYER GROUP:
           </span>
           <button
             onClick={() => setRelationFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 text-xs font-pixel border-2 transition-none ${
               relationFilter === 'all'
-                ? 'bg-stone-900 text-white shadow-xs'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                ? 'bg-[#404149] text-white border-white'
+                : 'mc-button'
             }`}
           >
             Everyone ({people.length})
           </button>
           <button
             onClick={() => setRelationFilter('partner')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${
+            className={`px-3 py-1.5 text-xs font-pixel border-2 transition-none flex items-center gap-1 ${
               relationFilter === 'partner'
-                ? 'bg-rose-600 text-white shadow-xs'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                ? 'bg-[#b71c1c] text-white border-white'
+                : 'mc-button'
             }`}
           >
             ❤️ Partner
           </button>
           <button
             onClick={() => setRelationFilter('family')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${
+            className={`px-3 py-1.5 text-xs font-pixel border-2 transition-none flex items-center gap-1 ${
               relationFilter === 'family'
-                ? 'bg-purple-600 text-white shadow-xs'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                ? 'bg-[#6d28d9] text-white border-white'
+                : 'mc-button'
             }`}
           >
             🏡 Family
           </button>
           <button
             onClick={() => setRelationFilter('friend')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${
+            className={`px-3 py-1.5 text-xs font-pixel border-2 transition-none flex items-center gap-1 ${
               relationFilter === 'friend'
-                ? 'bg-sky-600 text-white shadow-xs'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                ? 'bg-[#0284c7] text-white border-white'
+                : 'mc-button'
             }`}
           >
             ✨ Friends
           </button>
           <button
             onClick={() => setRelationFilter('colleague')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${
+            className={`px-3 py-1.5 text-xs font-pixel border-2 transition-none flex items-center gap-1 ${
               relationFilter === 'colleague'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                ? 'bg-[#2b7730] text-white border-white'
+                : 'mc-button'
             }`}
           >
-            💼 Colleagues
+            💼 Guild
           </button>
         </div>
 
         <button
           onClick={() => onOpenPersonModal()}
-          className="px-3.5 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
+          className="mc-button-emerald px-3.5 py-1.5 text-xs flex items-center gap-1.5"
         >
-          <Plus className="w-3.5 h-3.5" /> Add Loved One
+          <Plus className="w-3.5 h-3.5" /> Spawn Player
         </button>
       </div>
 
@@ -126,52 +120,53 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
           return (
             <div
               key={person.id}
-              className="p-5 rounded-2xl bg-white border border-stone-200 hover:shadow-md transition-all flex flex-col justify-between"
+              className="p-4 mc-panel border-2 border-black flex flex-col justify-between"
             >
               <div>
                 {/* Header info */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center p-0.5 shadow-xs shrink-0"
-                      style={{ backgroundColor: person.avatarColor || '#64748b' }}
-                    >
-                      <CuteFace name={person.name} config={person.cuteFace} size={44} />
+                    <div className="w-12 h-12 mc-slot flex items-center justify-center p-0.5 shrink-0">
+                      <CuteFace name={person.name} config={person.cuteFace} size={42} />
                     </div>
 
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-base font-bold text-stone-900">{person.name}</h3>
-                        <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-stone-100 text-stone-600 capitalize">
+                        <h3 className="text-sm font-bold text-white mc-text-shadow font-pixel">{person.name}</h3>
+                        <span className="px-1.5 py-0.2 border border-black bg-[#26252b] text-[#a3a4ab] text-[10px] capitalize">
                           {person.relationship}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2 text-xs text-stone-500 mt-1">
-                        <Calendar className="w-3.5 h-3.5 text-stone-400" />
-                        <span>
+                      <div className="flex items-center gap-2 text-xs text-[#a3a4ab] mt-1 font-pixel">
+                        <Calendar className="w-3.5 h-3.5 text-[#55ffff]" />
+                        <span className="text-white">
                           {months[person.birthMonth - 1]} {person.birthDay}
                         </span>
-                        <span>•</span>
+                        <span>■</span>
                         <span
-                          className={`font-semibold px-1.5 py-0.5 rounded-sm ${
-                            days <= 7 ? 'bg-amber-100 text-amber-800' : 'text-stone-700 bg-stone-50'
-                          }`}
+                          className={`font-bold px-1 py-0.2 border border-black ${
+                            days === 0
+                              ? 'bg-[#b71c1c] text-white mc-text-shadow'
+                              : days <= 7
+                              ? 'bg-[#d97706] text-black'
+                              : 'bg-[#212026] text-white'
+                          } text-[10px]`}
                         >
                           {formatRelativeDays(days)}
                         </span>
                         {turningAge && (
-                          <span className="text-stone-500 font-medium">({turningAge} yrs)</span>
+                          <span className="text-[#a3a4ab]">(Lvl {turningAge})</span>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 text-stone-400">
+                  <div className="flex items-center gap-1 text-[#888888]">
                     <button
                       onClick={() => onOpenPersonModal(person)}
-                      title="Edit person"
-                      className="p-1.5 hover:text-stone-700 rounded-lg hover:bg-stone-100"
+                      title="Edit player"
+                      className="mc-button p-1 text-xs"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
@@ -181,8 +176,8 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
                           deletePerson(person.id);
                         }
                       }}
-                      title="Remove person"
-                      className="p-1.5 hover:text-red-600 rounded-lg hover:bg-red-50"
+                      title="Remove player"
+                      className="mc-button-red p-1 text-xs"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -191,22 +186,22 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
 
                 {/* Sizing & Measurements Box */}
                 {(person.sizes?.clothing || person.sizes?.shoe || person.sizes?.ring) && (
-                  <div className="mt-3.5 p-2.5 rounded-xl bg-stone-50 border border-stone-150 flex flex-wrap items-center gap-3 text-xs">
-                    <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider flex items-center gap-1">
-                      <Shirt className="w-3.5 h-3.5 text-stone-400" /> Sizing:
+                  <div className="mt-3 p-2 mc-panel-dark border border-black flex flex-wrap items-center gap-2 text-xs">
+                    <span className="font-mc text-[9px] text-[#ffea75] flex items-center gap-1">
+                      <Shirt className="w-3.5 h-3.5 text-[#ffea75]" /> ARMOR/SIZING:
                     </span>
                     {person.sizes?.clothing && (
-                      <span className="bg-white px-2 py-0.5 rounded-md border border-stone-200 text-stone-700 font-medium">
-                        Clothes: <strong>{person.sizes.clothing}</strong>
+                      <span className="bg-[#212026] px-1.5 py-0.5 border border-black text-white text-[11px]">
+                        Armor: <strong>{person.sizes.clothing}</strong>
                       </span>
                     )}
                     {person.sizes?.shoe && (
-                      <span className="bg-white px-2 py-0.5 rounded-md border border-stone-200 text-stone-700 font-medium">
-                        Shoes: <strong>{person.sizes.shoe}</strong>
+                      <span className="bg-[#212026] px-1.5 py-0.5 border border-black text-white text-[11px]">
+                        Boots: <strong>{person.sizes.shoe}</strong>
                       </span>
                     )}
                     {person.sizes?.ring && (
-                      <span className="bg-white px-2 py-0.5 rounded-md border border-stone-200 text-stone-700 font-medium">
+                      <span className="bg-[#212026] px-1.5 py-0.5 border border-black text-white text-[11px]">
                         Ring/Wrist: <strong>{person.sizes.ring}</strong>
                       </span>
                     )}
@@ -215,13 +210,13 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
 
                 {/* Interests Pills */}
                 {person.interests && person.interests.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
+                  <div className="mt-2.5 flex flex-wrap gap-1">
                     {person.interests.map((interest, idx) => (
                       <span
                         key={idx}
-                        className="px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-700 text-xs font-medium"
+                        className="px-2 py-0.5 bg-[#212026] border border-black text-[#55ffff] text-xs font-pixel"
                       >
-                        {interest}
+                        #{interest}
                       </span>
                     ))}
                   </div>
@@ -229,30 +224,31 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
 
                 {/* Likes / Dislikes notes */}
                 {person.preferences?.likes && (
-                  <div className="mt-3 text-xs text-stone-600">
-                    <strong className="text-stone-800">Loves:</strong> {person.preferences.likes}
+                  <div className="mt-2 text-xs text-[#a3a4ab]">
+                    <strong className="text-[#55ff55]">Loves:</strong> {person.preferences.likes}
                   </div>
                 )}
                 {person.preferences?.dislikes && (
-                  <div className="mt-1 text-xs text-stone-500">
-                    <strong className="text-stone-700">Avoids:</strong> {person.preferences.dislikes}
+                  <div className="mt-0.5 text-xs text-[#a3a4ab]">
+                    <strong className="text-[#ff5555]">Avoids:</strong> {person.preferences.dislikes}
                   </div>
                 )}
 
-                {/* Budget Bar */}
+                {/* Emerald Budget Bar */}
                 {budget > 0 && (
-                  <div className="mt-4 pt-3 border-t border-stone-100 space-y-1">
+                  <div className="mt-3 pt-2.5 border-t border-[#3c3d44] space-y-1">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-stone-500 font-medium">Annual Gift Budget</span>
-                      <span className="font-semibold text-stone-800">
+                      <span className="text-[#a3a4ab]">Annual Emerald Budget</span>
+                      <span className="text-[#55ff55] font-pixel">
                         {formatCurrency(totalSpent)} / {formatCurrency(budget)} ({budgetPct}%)
                       </span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-stone-100 overflow-hidden">
+                    {/* Minecraft Emerald Bar */}
+                    <div className="w-full h-2.5 bg-[#0a0a0c] border border-black p-0.5">
                       <div
-                        className={`h-full rounded-full ${
-                          budgetPct > 100 ? 'bg-red-500' : 'bg-emerald-500'
-                        }`}
+                        className={`h-full ${
+                          budgetPct > 100 ? 'bg-[#b71c1c]' : 'bg-[#2b7730]'
+                        } shadow-[inset_0_1px_0_#ffffff]`}
                         style={{ width: `${Math.min(100, budgetPct)}%` }}
                       />
                     </div>
@@ -260,47 +256,47 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
                 )}
 
                 {/* Planned Gifts List */}
-                <div className="mt-4 pt-3 border-t border-stone-100">
-                  <div className="flex items-center justify-between text-xs font-semibold text-stone-600 mb-2">
-                    <span>Planned Gifts ({personGifts.length})</span>
+                <div className="mt-3 pt-2.5 border-t border-[#3c3d44]">
+                  <div className="flex items-center justify-between text-xs text-[#80ff20] font-mc text-[10px] mb-2 mc-text-shadow">
+                    <span>CHEST LOOT ({personGifts.length})</span>
                     <button
                       onClick={() => onAddGiftForPerson(person.id)}
-                      className="text-stone-900 hover:underline flex items-center gap-1 font-bold text-[11px]"
+                      className="text-[#55ffff] hover:underline flex items-center gap-1 font-pixel text-xs"
                     >
                       <Plus className="w-3 h-3" /> Add Gift
                     </button>
                   </div>
 
                   {personGifts.length === 0 ? (
-                    <p className="text-xs text-stone-400 italic">No gifts planned yet for {person.name}.</p>
+                    <p className="text-xs text-[#777777] italic">No items stored in chest yet for {person.name}.</p>
                   ) : (
                     <div className="space-y-1.5">
                       {personGifts.slice(0, 3).map((gift) => (
                         <div
                           key={gift.id}
                           onClick={() => onSelectGift(gift.id)}
-                          className="flex items-center justify-between p-2 rounded-lg bg-stone-50 hover:bg-stone-100 cursor-pointer text-xs transition-colors"
+                          className="flex items-center justify-between p-1.5 mc-panel-dark border border-black hover:border-white cursor-pointer text-xs"
                         >
-                          <div className="flex items-center gap-2 truncate">
+                          <div className="flex items-center gap-1.5 truncate">
                             {gift.type === 'handmade' ? (
-                              <span className="px-1.5 py-0.2 rounded-xs bg-rose-100 text-rose-800 text-[10px] font-bold">
+                              <span className="px-1 py-0.2 bg-[#2b7730] text-[#55ff55] text-[9px] border border-black">
                                 DIY
                               </span>
                             ) : (
-                              <span className="px-1.5 py-0.2 rounded-xs bg-amber-100 text-amber-800 text-[10px] font-bold">
-                                BOUGHT
+                              <span className="px-1 py-0.2 bg-[#d97706] text-black text-[9px] border border-black">
+                                TRADE
                               </span>
                             )}
-                            <span className="font-medium text-stone-800 truncate">{gift.title}</span>
+                            <span className="text-white truncate">{gift.title}</span>
                           </div>
-                          <span className="text-stone-500 font-mono shrink-0">
+                          <span className="text-[#ffea75] shrink-0 font-pixel">
                             {formatCurrency(gift.actualPrice ?? gift.estimatedPrice)}
                           </span>
                         </div>
                       ))}
                       {personGifts.length > 3 && (
-                        <span className="text-[11px] text-stone-500 font-medium block text-right">
-                          +{personGifts.length - 3} more gifts
+                        <span className="text-[10px] text-[#a3a4ab] block text-right font-pixel">
+                          +{personGifts.length - 3} more items in chest
                         </span>
                       )}
                     </div>
@@ -309,19 +305,19 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
               </div>
 
               {/* Card Footer Actions */}
-              <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
+              <div className="mt-3 pt-2.5 border-t border-[#3c3d44] flex items-center justify-between gap-2">
                 <button
                   onClick={() =>
                     onNavigateToAI(person.name, person.relationship, person.interests.join(', '))
                   }
-                  className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  className="mc-button-gold px-3 py-1.5 text-xs flex items-center gap-1.5"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600" /> AI Brainstorm
+                  <Sparkles className="w-3.5 h-3.5" /> Craft AI Ideas
                 </button>
 
                 <button
                   onClick={() => onAddGiftForPerson(person.id)}
-                  className="px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold flex items-center gap-1 transition-colors"
+                  className="mc-button-emerald px-3 py-1.5 text-xs flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" /> Plan Gift
                 </button>

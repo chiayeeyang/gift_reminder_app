@@ -84,7 +84,7 @@ function AppContent() {
   const urgentReminders = reminders.filter((r) => r.daysRemaining <= 7);
 
   return (
-    <div className="min-h-screen bg-[#fcfbf9] text-stone-900 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900">
+    <div className="min-h-screen text-[#f1ede4] flex flex-col font-pixel selection:bg-[#55ff55] selection:text-[#000000]">
       {/* App Header */}
       <Header
         activeTab={activeTab}
@@ -95,22 +95,22 @@ function AppContent() {
 
       {/* Urgent Birthday Alert Bar (if any birthdays/events within 7 days) */}
       {urgentReminders.length > 0 && activeTab !== 'circles' && activeTab !== 'reminders' && (
-        <div className="bg-amber-500 text-stone-950 px-4 py-2 text-xs font-semibold shadow-xs">
+        <div className="bg-[#b71c1c] text-[#ffffff] border-y-2 border-[#000000] px-4 py-2 text-xs font-pixel shadow-[0_2px_0_#000000]">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Flame className="w-4 h-4 text-stone-950" />
-              <span>
-                <strong>Urgent:</strong> {urgentReminders[0].title} is coming up in{' '}
+              <span className="text-sm">🔥</span>
+              <span className="mc-text-shadow">
+                <strong className="text-[#ffea75]">URGENT QUEST:</strong> {urgentReminders[0].title} is coming up in{' '}
                 {urgentReminders[0].daysRemaining === 0
-                  ? 'today! 🎉'
-                  : `${urgentReminders[0].daysRemaining} days!`}
+                  ? 'TODAY! 🎂'
+                  : `${urgentReminders[0].daysRemaining} DAYS!`}
               </span>
             </div>
             <button
               onClick={() => setActiveTab('circles')}
-              className="px-2.5 py-0.5 rounded-md bg-stone-950 text-white text-[11px] font-bold hover:bg-stone-900 transition-colors"
+              className="mc-button-gold px-3 py-0.5 text-xs font-pixel"
             >
-              View Circles
+              [ View Circles ]
             </button>
           </div>
         </div>
@@ -170,28 +170,31 @@ function AppContent() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-stone-200/80 bg-white py-6 text-xs text-stone-500">
+      <footer className="border-t-2 border-[#000000] bg-[#1a191d] py-5 text-xs text-[#a3a4ab] font-pixel">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-serif font-bold text-stone-900">GiftWise</span>
-            <span>—</span>
-            <span>Thoughtful bought & handmade gifts, zero forgotten birthdays.</span>
+            <span className="font-mc text-[#55ff55] text-xs mc-text-shadow">⛏️ GiftCraft</span>
+            <span className="text-[#555555]">■</span>
+            <span className="mc-text-shadow-sm">Crafting thoughtful gifts & zero missed birthdays.</span>
           </div>
 
           <div className="flex items-center gap-6">
-            <span>
-              <strong>{people.length}</strong> Loved Ones
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 bg-[#e0b28e] border border-black inline-block"></span>
+              <strong className="text-[#ffffff]">{people.length}</strong> Players
             </span>
-            <span>
-              <strong>{gifts.length}</strong> Gifts Tracked
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 bg-[#f59e0b] border border-black inline-block"></span>
+              <strong className="text-[#ffea75]">{gifts.length}</strong> Gifts in Chest
             </span>
-            <span>
-              <strong>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 bg-[#55ff55] border border-black inline-block"></span>
+              <strong className="text-[#55ff55]">
                 {gifts
                   .filter((g) => g.type === 'handmade')
-                  .reduce((sum, g) => sum + (g.craftingHoursEstimated || 0), 0)}
+                  .reduce((sum, g) => sum + (g.craftingHoursEstimated || 0), 0)}h
               </strong>{' '}
-              DIY Crafting Hours Planned
+              DIY Crafting XP
             </span>
           </div>
         </div>

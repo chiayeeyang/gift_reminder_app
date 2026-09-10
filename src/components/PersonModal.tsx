@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Person, Relationship, CuteFaceConfig } from '../types';
 import { useGifts } from '../context/GiftContext';
 import { CuteFace, getDerivedCuteFace } from './CuteFace';
-import { X, Heart, Users, User, Briefcase, Plus, Trash2, Smile, Sparkles } from 'lucide-react';
+import { X, Trash2, Smile } from 'lucide-react';
 
 interface PersonModalProps {
   isOpen: boolean;
@@ -11,14 +11,14 @@ interface PersonModalProps {
 }
 
 const AVATAR_COLORS = [
-  '#fbcfe8', // pastel rose
-  '#fecdd3', // pastel blossom pink
-  '#ddd6fe', // pastel lilac / lavender
-  '#bae6fd', // pastel sky blue
-  '#bbf7d0', // pastel mint green
-  '#fef08a', // pastel lemon butter
-  '#fed7aa', // pastel peach / apricot
-  '#e7e5e4', // pastel pebble warm gray
+  '#fbcfe8', // pink wool
+  '#fecdd3', // blossom
+  '#ddd6fe', // purple wool
+  '#bae6fd', // light blue wool
+  '#bbf7d0', // lime wool
+  '#fef08a', // yellow wool
+  '#fed7aa', // orange wool
+  '#e7e5e4', // light gray wool
 ];
 
 export const PersonModal: React.FC<PersonModalProps> = ({
@@ -204,74 +204,74 @@ export const PersonModal: React.FC<PersonModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/50 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-[#fffefb] rounded-2xl shadow-[6px_6px_0px_#292524] border-2 border-stone-800 overflow-hidden my-8 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 overflow-y-auto font-pixel">
+      <div className="relative w-full max-w-2xl mc-panel border-4 border-black overflow-hidden my-8 max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b-2 border-stone-800 bg-[#fffefb]">
+        <div className="flex items-center justify-between px-5 py-3 border-b-2 border-[#3c3d44] bg-[#212026]">
           <div>
-            <h2 className="text-xl font-bold text-stone-900 font-sketch text-2xl">
-              {personToEdit ? `Edit ${personToEdit.name}` : 'Add Someone Special'} ✨
+            <h2 className="text-sm font-bold text-white mc-text-shadow font-mc">
+              {personToEdit ? `EDIT PLAYER: ${personToEdit.name.toUpperCase()}` : 'SPAWN NEW PLAYER'}
             </h2>
-            <p className="text-xs text-stone-600 mt-0.5 font-sketch text-sm">
-              Keep their birthday, sizing, hobbies, and gift preferences handy.
+            <p className="text-[11px] text-[#a3a4ab] mt-0.5 font-pixel">
+              Configure player birthday, armor sizing, interests, and emerald budget.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-stone-700 hover:text-stone-950 bg-[#fffefb] border-2 border-stone-800 rounded-xl shadow-[1.5px_1.5px_0px_#292524] hover:bg-stone-100 transition-all"
+            className="mc-button-red p-1 text-xs"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Scrollable Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* Name & Relationship */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1 font-sketch text-sm">
-                Full Name *
+              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                Player Name *
               </label>
               <input
                 type="text"
                 required
-                placeholder="e.g., Sarah Jenkins, Mom, Ethan"
+                placeholder="e.g., Alex, Steve, Mom"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-800 bg-[#fffefb] text-stone-900 text-sm shadow-[1.5px_1.5px_0px_#292524] focus:outline-hidden"
+                className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1 font-sketch text-sm">
-                Relationship
+              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                Player Group / Relationship
               </label>
               <select
                 value={relationship}
                 onChange={(e) => setRelationship(e.target.value as Relationship)}
-                className="w-full px-3.5 py-2.5 rounded-xl border-2 border-stone-800 bg-[#fffefb] text-stone-900 text-sm shadow-[1.5px_1.5px_0px_#292524] focus:outline-hidden"
+                className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
               >
                 <option value="partner">❤️ Partner / Spouse</option>
-                <option value="family">🏡 Family (Parents, Siblings, Kids)</option>
+                <option value="family">🏡 Family</option>
                 <option value="friend">✨ Friend</option>
-                <option value="colleague">💼 Colleague / Work</option>
+                <option value="colleague">💼 Guild Companion</option>
                 <option value="other">🌟 Other</option>
               </select>
             </div>
           </div>
 
           {/* Birthday and Year */}
-          <div className="p-4 rounded-xl bg-amber-50/40 border border-amber-200/70 space-y-3">
-            <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-              🎂 Birthday Date (For Reminders & Age Milestones)
+          <div className="p-3.5 mc-panel-dark border border-black space-y-2.5">
+            <h3 className="font-mc text-[9px] text-[#ffea75] mc-text-shadow">
+              🎂 BIRTHDAY EVENT TICK (FOR REMINDERS & LEVEL MILESTONES)
             </h3>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs text-stone-600 mb-1">Month</label>
+                <label className="block text-xs text-[#a3a4ab] mb-1">Month</label>
                 <select
                   value={birthMonth}
                   onChange={(e) => setBirthMonth(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-sm"
+                  className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                 >
                   {months.map((m, idx) => (
                     <option key={m} value={idx + 1}>
@@ -282,7 +282,7 @@ export const PersonModal: React.FC<PersonModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs text-stone-600 mb-1">Day</label>
+                <label className="block text-xs text-[#a3a4ab] mb-1">Day</label>
                 <input
                   type="number"
                   min="1"
@@ -290,75 +290,47 @@ export const PersonModal: React.FC<PersonModalProps> = ({
                   required
                   value={birthDay}
                   onChange={(e) => setBirthDay(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-sm"
+                  className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-stone-600 mb-1">Birth Year (Optional)</label>
+                <label className="block text-xs text-[#a3a4ab] mb-1">Birth Year (Optional)</label>
                 <input
                   type="number"
                   placeholder="e.g. 1996"
                   value={birthYear}
                   onChange={(e) => setBirthYear(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-sm"
+                  className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                 />
               </div>
             </div>
           </div>
 
-          {/* Cute Face Expression Customizer with Live Preview */}
-          <div className="p-4 rounded-xl bg-amber-50/40 border border-amber-200/70 space-y-3">
+          {/* Minecraft Pixel Player Head Customizer with Live Preview */}
+          <div className="p-3.5 mc-panel-dark border border-black space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <Smile className="w-3.5 h-3.5 text-amber-600" />
-                  Circle Facial Expression
+                <h3 className="font-mc text-[9px] text-[#55ffff] flex items-center gap-1.5 mc-text-shadow">
+                  <Smile className="w-3.5 h-3.5 text-[#55ffff]" />
+                  MINECRAFT PLAYER SKIN HEAD
                 </h3>
-                <p className="text-[11px] text-stone-500">
-                  The circle itself is the face! Choose their personality expression:
+                <p className="text-[11px] text-[#a3a4ab] font-pixel">
+                  Pixel-art character avatar preview:
                 </p>
               </div>
 
-              {/* Live Preview Circle */}
-              <div className="w-18 h-18 relative flex items-center justify-center shrink-0">
-                <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" fill="none">
-                  <defs>
-                    <radialGradient id="modal-preview-wash" cx="42%" cy="38%" r="62%">
-                      <stop offset="0%" stopColor="#ffffff" stopOpacity="0.3" />
-                      <stop offset="85%" stopColor={avatarColor} stopOpacity="1" />
-                      <stop offset="100%" stopColor="#292524" stopOpacity="0.1" />
-                    </radialGradient>
-                  </defs>
-                  <path
-                    d="M 50 3.8 C 75.8 3.2, 96.5 24.2, 96.1 49.8 C 95.7 75.5, 75.8 96.2, 50.2 95.8 C 24.5 95.4, 3.8 74.8, 4.2 49.8 C 4.6 24.5, 24.8 4.5, 50 3.8 Z"
-                    fill="url(#modal-preview-wash)"
-                  />
-                  <path
-                    d="M 50.4 4.5 C 75.2 3.8, 95.5 25.2, 95.1 50.2 C 94.7 74.8, 74.5 95.2, 49.8 95 C 25.1 94.8, 5.2 75, 4.8 50.4 C 4.5 25.4, 25.4 5.2, 50.4 4.5"
-                    stroke="#78716c"
-                    strokeWidth="1.3"
-                    strokeLinecap="round"
-                    strokeDasharray="90 4 40 3"
-                    opacity={0.6}
-                  />
-                  <path
-                    d="M 50 3.8 C 75.8 3.2, 96.5 24.2, 96.1 49.8 C 95.7 75.5, 75.8 96.2, 50.2 95.8 C 24.5 95.4, 3.8 74.8, 4.2 49.8 C 4.6 24.5, 24.8 4.5, 50 3.8 Z"
-                    stroke="#292524"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+              {/* Live Preview in Item Slot */}
+              <div className="w-14 h-14 mc-slot relative flex items-center justify-center shrink-0">
                 <CuteFace
-                  name={name || 'Friend'}
+                  name={name || 'Player'}
                   config={{
                     expression,
                     glasses,
                     freckles,
                     blush,
                   }}
-                  size={52}
+                  size={46}
                   isHovered={true}
                 />
               </div>
@@ -366,8 +338,8 @@ export const PersonModal: React.FC<PersonModalProps> = ({
 
             {/* Expression selector */}
             <div>
-              <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                Expression
+              <label className="block text-[10px] text-[#a3a4ab] mb-1 font-pixel">
+                Facial Expression:
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {[
@@ -384,10 +356,10 @@ export const PersonModal: React.FC<PersonModalProps> = ({
                     key={expr.id}
                     type="button"
                     onClick={() => setExpression(expr.id as any)}
-                    className={`px-2.5 py-1 text-xs rounded-lg border font-medium transition-all ${
+                    className={`px-2 py-1 text-xs border transition-none font-pixel ${
                       expression === expr.id
-                        ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
-                        : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'
+                        ? 'bg-[#404149] text-white border-white'
+                        : 'mc-button'
                     }`}
                   >
                     {expr.label}
@@ -398,34 +370,34 @@ export const PersonModal: React.FC<PersonModalProps> = ({
 
             {/* Features Toggles */}
             <div className="flex flex-wrap items-center gap-4 pt-1 text-xs">
-              <label className="flex items-center gap-1.5 cursor-pointer">
+              <label className="flex items-center gap-1.5 cursor-pointer text-white">
                 <input
                   type="checkbox"
                   checked={glasses}
                   onChange={(e) => setGlasses(e.target.checked)}
-                  className="rounded-sm border-stone-300 text-stone-900 focus:ring-stone-900"
+                  className="accent-[#2b7730]"
                 />
-                <span className="font-medium text-stone-700">Glasses 👓</span>
+                <span className="font-pixel">Glasses 👓</span>
               </label>
 
-              <label className="flex items-center gap-1.5 cursor-pointer">
+              <label className="flex items-center gap-1.5 cursor-pointer text-white">
                 <input
                   type="checkbox"
                   checked={freckles}
                   onChange={(e) => setFreckles(e.target.checked)}
-                  className="rounded-sm border-stone-300 text-stone-900 focus:ring-stone-900"
+                  className="accent-[#2b7730]"
                 />
-                <span className="font-medium text-stone-700">Freckles ✨</span>
+                <span className="font-pixel">Freckles ✨</span>
               </label>
 
-              <label className="flex items-center gap-1.5 cursor-pointer">
+              <label className="flex items-center gap-1.5 cursor-pointer text-white">
                 <input
                   type="checkbox"
                   checked={blush}
                   onChange={(e) => setBlush(e.target.checked)}
-                  className="rounded-sm border-stone-300 text-stone-900 focus:ring-stone-900"
+                  className="accent-[#2b7730]"
                 />
-                <span className="font-medium text-stone-700">Cheek Blush 🌸</span>
+                <span className="font-pixel">Cheek Blush 🌸</span>
               </label>
             </div>
           </div>
@@ -433,8 +405,8 @@ export const PersonModal: React.FC<PersonModalProps> = ({
           {/* Color & Annual Budget */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-                Avatar Theme Color
+              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                Player Wool Color
               </label>
               <div className="flex items-center gap-2 pt-1">
                 {AVATAR_COLORS.map((c) => (
@@ -443,8 +415,8 @@ export const PersonModal: React.FC<PersonModalProps> = ({
                     type="button"
                     onClick={() => setAvatarColor(c)}
                     style={{ backgroundColor: c }}
-                    className={`w-7 h-7 rounded-full transition-transform ${
-                      avatarColor === c ? 'ring-2 ring-offset-2 ring-stone-900 scale-110' : 'opacity-80 hover:opacity-100'
+                    className={`w-6 h-6 border-2 border-black ${
+                      avatarColor === c ? 'ring-2 ring-white scale-110' : 'opacity-80 hover:opacity-100'
                     }`}
                   />
                 ))}
@@ -452,81 +424,81 @@ export const PersonModal: React.FC<PersonModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-                Annual Gift Budget Target ($)
+              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                Annual Emerald Budget Target ($)
               </label>
               <input
                 type="number"
                 placeholder="e.g., 200"
                 value={annualBudget}
                 onChange={(e) => setAnnualBudget(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-3.5 py-2 rounded-xl border border-stone-200 bg-white text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900"
+                className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
               />
             </div>
           </div>
 
           {/* Hobbies / Interests */}
           <div>
-            <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
               Hobbies & Interests (Comma-separated)
             </label>
             <input
               type="text"
-              placeholder="e.g., Specialty Coffee, Watercolor, Hiking, Sourdough, Sci-Fi"
+              placeholder="e.g., Coffee brewing, Watercolor, Hiking, Baking, Sci-Fi"
               value={interestsStr}
               onChange={(e) => setInterestsStr(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900"
+              className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
             />
           </div>
 
           {/* Sizing Section */}
-          <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
-            <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
-              👕 Sizing Guide (Never guess their size again)
+          <div className="p-3.5 mc-panel-dark border border-black space-y-2.5">
+            <h3 className="font-mc text-[9px] text-[#ffea75] mc-text-shadow">
+              👕 ARMOR & SIZING GUIDE
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs text-stone-600 mb-1">Clothing Size</label>
+                <label className="block text-xs text-[#a3a4ab] mb-1">Chestplate / Clothing</label>
                 <input
                   type="text"
                   placeholder="e.g., M / 38 / 6"
                   value={clothingSize}
                   onChange={(e) => setClothingSize(e.target.value)}
-                  className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-xs"
+                  className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-stone-600 mb-1">Shoe Size</label>
+                <label className="block text-xs text-[#a3a4ab] mb-1">Boots / Shoe Size</label>
                 <input
                   type="text"
                   placeholder="e.g., 9.5 US / 42 EU"
                   value={shoeSize}
                   onChange={(e) => setShoeSize(e.target.value)}
-                  className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-xs"
+                  className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-stone-600 mb-1">Ring / Wrist / Hat</label>
+                <label className="block text-xs text-[#a3a4ab] mb-1">Ring / Wrist / Hat</label>
                 <input
                   type="text"
-                  placeholder="e.g., Ring 7, 7 inch wrist, M hat"
+                  placeholder="e.g., Ring 7, 7 inch wrist"
                   value={ringSize}
                   onChange={(e) => setRingSize(e.target.value)}
-                  className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-xs"
+                  className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs text-stone-600 mb-1">Fit Preferences / Style Notes</label>
+              <label className="block text-xs text-[#a3a4ab] mb-1">Fit Preferences / Style Notes</label>
               <input
                 type="text"
-                placeholder="e.g., Likes oversized fits, breathable linen, avoids synthetic fabrics"
+                placeholder="e.g., Oversized fits, natural cotton/linen, avoids synthetic"
                 value={sizeNotes}
                 onChange={(e) => setSizeNotes(e.target.value)}
-                className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-xs"
+                className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
               />
             </div>
           </div>
@@ -534,50 +506,50 @@ export const PersonModal: React.FC<PersonModalProps> = ({
           {/* Preferences & Allergies */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">
-                Loves / Favorite Things
+              <label className="block text-xs font-pixel text-[#55ff55] mb-1">
+                Loves / Favorite Items
               </label>
               <textarea
                 rows={2}
-                placeholder="e.g., Lavender scents, dark chocolate, cozy blankets"
+                placeholder="e.g., Lavender tea, dark chocolate, cozy wool blankets"
                 value={likes}
                 onChange={(e) => setLikes(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-xs"
+                className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">
+              <label className="block text-xs font-pixel text-[#ff5555] mb-1">
                 Dislikes / Allergies / Avoid
               </label>
               <textarea
                 rows={2}
-                placeholder="e.g., Allergic to wool, hates knick-knacks or strong perfumes"
+                placeholder="e.g., Allergic to wool, dislikes knick-knacks or loud perfumes"
                 value={dislikes}
                 onChange={(e) => setDislikes(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-xs"
+                className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
               />
             </div>
           </div>
 
-          {/* Custom Events (Anniversary, etc.) */}
-          <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
-            <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
-              💍 Additional Celebrations (Anniversary, Graduation, etc.)
+          {/* Custom Events */}
+          <div className="p-3.5 mc-panel-dark border border-black space-y-2.5">
+            <h3 className="font-mc text-[9px] text-[#80ff20] mc-text-shadow">
+              💍 ADDITIONAL QUEST CELEBRATIONS
             </h3>
 
             {customEvents.map((ev) => (
               <div
                 key={ev.id}
-                className="flex items-center justify-between px-3 py-2 rounded-lg bg-white border border-stone-200 text-xs"
+                className="flex items-center justify-between p-2 mc-panel border border-black text-xs"
               >
-                <span className="font-medium text-stone-800">{ev.name}</span>
+                <span className="text-white">{ev.name}</span>
                 <div className="flex items-center gap-3">
-                  <span className="text-stone-500">{months[ev.month - 1]} {ev.day}</span>
+                  <span className="text-[#a3a4ab]">{months[ev.month - 1]} {ev.day}</span>
                   <button
                     type="button"
                     onClick={() => setCustomEvents(customEvents.filter((c) => c.id !== ev.id))}
-                    className="text-stone-400 hover:text-red-600"
+                    className="mc-button-red p-1 text-xs"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -588,15 +560,15 @@ export const PersonModal: React.FC<PersonModalProps> = ({
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Event Name (e.g. Our Anniversary)"
+                placeholder="Event Name (e.g. Guild Anniversary)"
                 value={newCustomName}
                 onChange={(e) => setNewCustomName(e.target.value)}
-                className="flex-1 px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-xs"
+                className="flex-1 mc-input px-2.5 py-1 text-xs font-pixel"
               />
               <select
                 value={newCustomMonth}
                 onChange={(e) => setNewCustomMonth(Number(e.target.value))}
-                className="px-2 py-1.5 rounded-lg border border-stone-200 bg-white text-xs"
+                className="mc-input px-2 py-1 text-xs font-pixel"
               >
                 {months.map((m, idx) => (
                   <option key={m} value={idx + 1}>
@@ -610,12 +582,12 @@ export const PersonModal: React.FC<PersonModalProps> = ({
                 max="31"
                 value={newCustomDay}
                 onChange={(e) => setNewCustomDay(Number(e.target.value))}
-                className="w-14 px-2 py-1.5 rounded-lg border border-stone-200 bg-white text-xs"
+                className="w-14 mc-input px-2 py-1 text-xs font-pixel"
               />
               <button
                 type="button"
                 onClick={handleAddCustomEvent}
-                className="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-900 text-white text-xs font-medium"
+                className="mc-button-emerald px-3 py-1 text-xs"
               >
                 Add
               </button>
@@ -624,7 +596,7 @@ export const PersonModal: React.FC<PersonModalProps> = ({
 
           {/* General Notes */}
           <div>
-            <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1 font-sketch text-sm">
+            <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
               General Notes
             </label>
             <textarea
@@ -632,24 +604,24 @@ export const PersonModal: React.FC<PersonModalProps> = ({
               placeholder="Any ongoing gift thoughts or shared memories..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border-2 border-stone-800 bg-[#fffefb] text-sm shadow-[1.5px_1.5px_0px_#292524] focus:outline-hidden"
+              className="w-full mc-input px-2.5 py-1 text-xs font-pixel"
             />
           </div>
 
           {/* Submit */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t-2 border-stone-800">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#3c3d44]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border-2 border-stone-800 text-stone-800 bg-[#fffefb] hover:bg-stone-100 text-xs font-bold shadow-[1.5px_1.5px_0px_#292524] transition-all"
+              className="mc-button px-4 py-1.5 text-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-[#fffefb] text-xs font-bold border-2 border-stone-900 shadow-[2px_2px_0px_#292524] transition-all"
+              className="mc-button-emerald px-5 py-1.5 text-xs"
             >
-              {personToEdit ? 'Save Changes' : 'Add Person'}
+              {personToEdit ? 'Save Player Changes' : 'Spawn Player'}
             </button>
           </div>
         </form>

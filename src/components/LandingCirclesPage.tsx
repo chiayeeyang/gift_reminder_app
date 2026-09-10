@@ -566,21 +566,21 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-140px)] flex flex-col justify-between select-none">
+    <div className="relative min-h-[calc(100vh-140px)] flex flex-col justify-between select-none font-pixel">
       {/* Top Controls & Header Bar */}
       <div className="w-full max-w-6xl mx-auto pt-1 pb-4 px-2 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 tracking-tight flex items-center gap-2">
-              <span>Birthday Sketchpad</span>
+            <h1 className="text-xl sm:text-2xl font-mc text-[#ffffff] mc-text-shadow tracking-wider flex items-center gap-2">
+              <span>PLAYER HEADS & ARENA</span>
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#fef08a] text-stone-900 border-2 border-stone-800 shadow-[1.5px_1.5px_0px_#292524] flex items-center gap-1 font-sketch">
-              <Sparkles className="w-3 h-3 text-amber-700" />
-              Hand-Drawn & Bouncy
+            <span className="px-2 py-0.5 bg-[#2b7730] text-[#ffffff] border-2 border-black text-xs font-pixel flex items-center gap-1 shadow-[2px_2px_0_#000000]">
+              <Sparkles className="w-3 h-3 text-[#55ff55]" />
+              PHYSICS LIVE
             </span>
           </div>
-          <p className="text-xs text-stone-600 mt-1 font-medium">
-            Each person is a hand-sketched pastel circle face on paper. Bigger circles mean closer birthdays! Hover to bounce them into each other, drag to fling, or click to view gift ideas.
+          <p className="text-xs text-[#a3a4ab] mt-1 mc-text-shadow-sm">
+            Each loved one is an 8-bit Minecraft player head block. Closer birthdays have larger avatars and celebratory party helmets. Bounce them around or click to open player gift quests.
           </p>
         </div>
 
@@ -588,34 +588,34 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={onOpenNewPersonModal}
-            className="px-4 py-2 bg-[#fbcfe8] hover:bg-[#f9a8d4] text-stone-900 border-2 border-stone-800 rounded-xl text-xs font-bold shadow-[2.5px_2.5px_0px_#292524] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center gap-1.5"
+            className="mc-button-emerald px-4 py-2 text-xs flex items-center gap-1.5"
           >
-            <Plus className="w-4 h-4 text-stone-900" />
-            <span>Add Person</span>
+            <Plus className="w-4 h-4 text-[#a5d6a7]" />
+            <span>Spawn Player</span>
           </button>
         </div>
       </div>
 
-      {/* Filter and relationship bar (Styled like notebook index tabs) */}
+      {/* Filter and relationship bar: Minecraft Item Slot Tabs */}
       <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 pb-3 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-stone-500 font-bold mr-1 flex items-center gap-1 text-xs font-sketch">
-            <Filter className="w-3 h-3 text-stone-700" /> Filter:
+          <span className="text-[#80ff20] font-mc text-[10px] mr-1 flex items-center gap-1 mc-text-shadow">
+            <Filter className="w-3 h-3 text-[#80ff20]" /> FILTER:
           </span>
           {[
-            { id: 'all', label: 'All Loved Ones' },
+            { id: 'all', label: '[ALL PLAYERS]' },
             { id: 'partner', label: '❤️ Partner' },
             { id: 'family', label: '🏡 Family' },
             { id: 'friend', label: '✨ Friends' },
-            { id: 'colleague', label: '💼 Colleagues' },
+            { id: 'colleague', label: '💼 Guild' },
           ].map((pill) => (
             <button
               key={pill.id}
               onClick={() => setSelectedRelation(pill.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 text-xs font-pixel border-2 transition-none ${
                 selectedRelation === pill.id
-                  ? 'bg-stone-900 text-[#fffefb] border-2 border-stone-900 shadow-[2px_2px_0px_#292524]'
-                  : 'bg-[#fffefb] text-stone-700 hover:bg-stone-100 border-2 border-stone-700/60 shadow-[1px_1px_0px_#292524]'
+                  ? 'bg-[#404149] text-[#ffff55] border-white shadow-[inset_2px_2px_0_#626470,inset_-2px_-2px_0_#1e1f24]'
+                  : 'mc-button'
               }`}
             >
               {pill.label}
@@ -624,19 +624,19 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         </div>
 
         {/* Quick search input */}
-        <div className="relative w-full sm:w-60">
-          <Search className="w-3.5 h-3.5 text-stone-600 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <div className="relative w-full sm:w-64">
+          <Search className="w-3.5 h-3.5 text-[#888888] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search sketch by name..."
+            placeholder="Search player name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8.5 pr-3 py-1.5 bg-[#fffefb] border-2 border-stone-800 rounded-full text-xs text-stone-900 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-stone-800 shadow-[1.5px_1.5px_0px_#292524]"
+            className="w-full pl-8.5 pr-3 py-1.5 mc-input text-xs placeholder-[#777777]"
           />
         </div>
       </div>
 
-      {/* THE SCREEN CONTAINER (Styled as an authentic Artist's Sketchpad Canvas) */}
+      {/* THE MINECRAFT ARENA CONTAINER */}
       <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 flex-1 flex flex-col">
         <div
           id="physics-screen-container"
@@ -644,29 +644,28 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
           onMouseMove={handleMouseMove}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          className="w-full h-[580px] sm:h-[620px] rounded-3xl border-3 border-stone-800 bg-[#fffefb] shadow-[5px_5px_0px_#292524] relative overflow-hidden flex-1 cursor-crosshair select-none"
+          className="w-full h-[580px] sm:h-[620px] border-4 border-[#000000] bg-[#161519] shadow-[6px_6px_0_#000000] relative overflow-hidden flex-1 cursor-crosshair select-none"
           style={{
-            backgroundImage: `radial-gradient(#d6cebf 1.2px, transparent 1.2px)`,
-            backgroundSize: '24px 24px',
+            backgroundImage: `
+              linear-gradient(45deg, #100f12 25%, transparent 25%), 
+              linear-gradient(-45deg, #100f12 25%, transparent 25%), 
+              linear-gradient(45deg, transparent 75%, #100f12 75%), 
+              linear-gradient(-45deg, transparent 75%, #100f12 75%)
+            `,
+            backgroundSize: '32px 32px',
+            backgroundPosition: '0 0, 0 16px, 16px -16px, -16px 0px',
           }}
         >
-          {/* Sketchbook Top Binding Rings / Spiral Accent */}
-          <div className="absolute top-0 inset-x-0 h-3 flex items-center justify-around px-8 pointer-events-none z-20">
-            {Array.from({ length: 18 }).map((_, i) => (
-              <div
-                key={i}
-                className="w-2.5 h-3 bg-stone-300 rounded-b-sm border-x border-b border-stone-600 shadow-2xs opacity-70"
-              />
-            ))}
-          </div>
+          {/* Minecraft Top Inventory Bevel Bar */}
+          <div className="absolute top-0 inset-x-0 h-1.5 bg-[#3a3b42] border-b border-[#0a0a0c] pointer-events-none z-20" />
 
           {/* Screen Bezel HUD (Top Bar) */}
-          <div className="absolute top-4 inset-x-4 flex items-center justify-between z-20 pointer-events-none">
-            {/* Live Indicator (Hand-drawn Note Badge) */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#fffefb] border-2 border-stone-800 shadow-[2px_2px_0px_#292524] text-stone-900 text-xs font-bold">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-              <span className="font-sketch text-sm tracking-wide text-stone-800">
-                ✏️ Sketchpad • Hover circles to bounce them!
+          <div className="absolute top-3 inset-x-3 flex items-center justify-between z-20 pointer-events-none">
+            {/* Live Indicator (Minecraft Action Bar) */}
+            <div className="flex items-center gap-2 px-3 py-1.5 mc-panel-dark border-2 border-black text-[#ffffff] text-xs font-pixel shadow-[2px_2px_0_#000000]">
+              <span className="w-2.5 h-2.5 bg-[#55ff55] border border-black animate-pulse" />
+              <span className="mc-text-shadow text-[#80ff20] font-pixel text-xs tracking-wide">
+                ⛏️ ARENA CHUNK ACTIVE • Hover to bounce players
               </span>
             </div>
 
@@ -674,16 +673,16 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
             <div className="flex items-center gap-2 pointer-events-auto">
               <button
                 onClick={handleNudgeAll}
-                className="px-3 py-1.5 rounded-xl bg-[#fef08a] hover:bg-[#fde047] text-stone-900 text-xs font-bold shadow-[2px_2px_0px_#292524] border-2 border-stone-800 flex items-center gap-1.5 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-                title="Send a bounce impulse through all circles"
+                className="mc-button-gold px-3 py-1.5 text-xs flex items-center gap-1.5"
+                title="Send a bounce impulse through all players"
               >
-                <Zap className="w-3.5 h-3.5 text-stone-900 fill-stone-900" />
+                <Zap className="w-3.5 h-3.5 text-white fill-white" />
                 <span>Nudge All</span>
               </button>
 
               <button
                 onClick={handleResetPositions}
-                className="p-2 rounded-xl bg-[#fffefb] hover:bg-stone-100 text-stone-800 shadow-[2px_2px_0px_#292524] border-2 border-stone-800 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                className="mc-button p-2 text-xs"
                 title="Reset layout"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -691,14 +690,11 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
             </div>
           </div>
 
-          {/* Soft Paper Shadow / Bottom Gradient */}
-          <div className="absolute bottom-0 inset-x-0 h-10 bg-gradient-to-t from-stone-200/40 to-transparent pointer-events-none" />
-
           {/* Render All Physics Circles Inside the Screen Container */}
           {filteredPeople.map((person) => {
             const isHovered = hoveredPersonId === person.id;
             const diameter = person.radius * 2;
-            const faceSize = Math.max(44, Math.round(diameter * 0.72));
+            const faceSize = Math.max(44, Math.round(diameter * 0.76));
 
             return (
               <div
@@ -715,77 +711,59 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                 onMouseLeave={() => setHoveredPersonId(null)}
                 onMouseDown={(e) => handleCircleMouseDown(e, person.id)}
                 onMouseUp={(e) => handleCircleMouseUp(e, person)}
-                className="absolute top-0 left-0 rounded-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing will-change-transform z-10 transition-transform duration-150"
+                className="absolute top-0 left-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing will-change-transform z-10"
                 style={{
                   width: diameter,
                   height: diameter,
                   filter: isHovered
-                    ? 'drop-shadow(3.5px 5px 0px rgba(41, 37, 36, 0.45))'
-                    : 'drop-shadow(2px 3px 0px rgba(41, 37, 36, 0.22))',
+                    ? 'drop-shadow(0 0 6px #ffff55) drop-shadow(4px 4px 0 #000000)'
+                    : 'drop-shadow(3px 3px 0 #000000)',
                 }}
               >
-                {/* SVG HANDDRAWN SKETCH CIRCLE BACKGROUND & DOUBLE STROKES */}
+                {/* MINECRAFT BLOCK CONTAINER / ITEM FRAME BACKGROUND */}
                 <svg
                   viewBox="0 0 100 100"
                   className="absolute inset-0 w-full h-full pointer-events-none"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
+                  shapeRendering="crispEdges"
                 >
-                  <defs>
-                    {/* Soft watercolor / crayon paper wash gradient */}
-                    <radialGradient id={`circle-wash-${person.id}`} cx="42%" cy="38%" r="62%">
-                      <stop offset="0%" stopColor="#ffffff" stopOpacity="0.3" />
-                      <stop offset="85%" stopColor={person.avatarColor || '#fbcfe8'} stopOpacity="1" />
-                      <stop offset="100%" stopColor="#292524" stopOpacity="0.1" />
-                    </radialGradient>
-                  </defs>
+                  {/* Outer Black Pixel Border */}
+                  <rect x="0" y="0" width="100" height="100" fill="#000000" />
 
-                  {/* Pastel Watercolor / Crayon Wash Fill with Organic Hand-Drawn Wobble */}
-                  <path
-                    d="M 50 3.8 C 75.8 3.2, 96.5 24.2, 96.1 49.8 C 95.7 75.5, 75.8 96.2, 50.2 95.8 C 24.5 95.4, 3.8 74.8, 4.2 49.8 C 4.6 24.5, 24.8 4.5, 50 3.8 Z"
-                    fill={`url(#circle-wash-${person.id})`}
-                  />
+                  {/* 3D Beveled Block Outline */}
+                  <rect x="3" y="3" width="94" height="94" fill="#3a3835" />
+                  {/* Inner Wood / Stone Tile */}
+                  <rect x="6" y="6" width="88" height="88" fill={person.avatarColor || '#6d4c41'} />
+                  {/* Recessed Slot Screen */}
+                  <rect x="9" y="9" width="82" height="82" fill="#1b1a1f" />
 
-                  {/* Secondary Graphite Pencil Stroke (Imperfect second pass sketched with pencil) */}
-                  <path
-                    d="M 50.4 4.5 C 75.2 3.8, 95.5 25.2, 95.1 50.2 C 94.7 74.8, 74.5 95.2, 49.8 95 C 25.1 94.8, 5.2 75, 4.8 50.4 C 4.5 25.4, 25.4 5.2, 50.4 4.5"
-                    stroke="#78716c"
-                    strokeWidth="1.3"
-                    strokeLinecap="round"
-                    strokeDasharray="90 4 40 3"
-                    opacity={isHovered ? 0.8 : 0.55}
-                  />
+                  {/* Top & Left Bevel Highlight */}
+                  <rect x="3" y="3" width="94" height="3" fill="#ffffff" opacity="0.4" />
+                  <rect x="3" y="3" width="3" height="94" fill="#ffffff" opacity="0.4" />
+                  {/* Bottom & Right Bevel Shadow */}
+                  <rect x="3" y="94" width="94" height="3" fill="#000000" opacity="0.8" />
+                  <rect x="94" y="3" width="3" height="94" fill="#000000" opacity="0.8" />
 
-                  {/* Primary Charcoal Ink Stroke (Natural felt-tip pen contour with hand wobble) */}
-                  <path
-                    d="M 50 3.8 C 75.8 3.2, 96.5 24.2, 96.1 49.8 C 95.7 75.5, 75.8 96.2, 50.2 95.8 C 24.5 95.4, 3.8 74.8, 4.2 49.8 C 4.6 24.5, 24.8 4.5, 50 3.8 Z"
-                    stroke="#292524"
-                    strokeWidth={isHovered ? 3.4 : 2.8}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-
-                  {/* Sketched Festive Birthday Party Hat if <= 7 days or today! */}
+                  {/* Birthday Celebration Crown / Helmet if <= 7 days or today! */}
                   {(person.urgencyTier === 'urgent' || person.urgencyTier === 'today') && (
-                    <g transform="translate(63, -2) rotate(18)">
-                      {/* Handdrawn striped party cone */}
-                      <polygon
-                        points="12,0 0,26 24,26"
-                        fill="#fef08a"
-                        stroke="#292524"
-                        strokeWidth="2"
-                        strokeLinejoin="round"
-                      />
-                      {/* Sketched stripes */}
-                      <path d="M 4 18 L 20 18" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" />
-                      <path d="M 8 10 L 16 10" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" />
-                      {/* Fluffy pom-pom on top */}
-                      <circle cx="12" cy="0" r="3.4" fill="#f43f5e" stroke="#292524" strokeWidth="1.5" />
+                    <g transform="translate(20, -10)">
+                      {/* Pixelated Golden Crown */}
+                      <rect x="0" y="0" width="60" height="16" fill="#000000" />
+                      <rect x="2" y="4" width="56" height="10" fill="#f59e0b" />
+                      {/* Crown Peaks */}
+                      <rect x="2" y="0" width="10" height="8" fill="#fbbf24" />
+                      <rect x="24" y="-3" width="12" height="11" fill="#fef08a" />
+                      <rect x="48" y="0" width="10" height="8" fill="#fbbf24" />
+                      {/* Gems in crown */}
+                      <rect x="6" y="7" width="4" height="4" fill="#ef4444" />
+                      <rect x="28" y="5" width="4" height="4" fill="#38bdf8" />
+                      <rect x="50" y="7" width="4" height="4" fill="#22c55e" />
                     </g>
                   )}
                 </svg>
 
-                {/* THE NATURAL HANDDRAWN FACIAL EXPRESSION */}
+                {/* THE MINECRAFT 8x8 / 16x16 PLAYER HEAD */}
                 <div className="relative flex items-center justify-center pointer-events-none -mt-1 z-10">
                   <CuteFace
                     name={person.name}
@@ -795,34 +773,34 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                   />
                 </div>
 
-                {/* PERSON NAME & BIRTHDAY NOTE (Styled as a hand-written paper tag) */}
-                <div className="absolute bottom-2.5 inset-x-2 flex flex-col items-center justify-center pointer-events-none px-1 text-center z-10">
-                  <div className="bg-[#fffefb] border-[1.5px] border-stone-800 rounded-lg px-2 py-0.5 shadow-[1.5px_1.5px_0px_#292524] max-w-[94%] flex flex-col items-center">
+                {/* MINECRAFT PLAYER NAMETAG (Dark translucent box with white text + drop shadow) */}
+                <div className="absolute -bottom-3 inset-x-1 flex flex-col items-center justify-center pointer-events-none z-20">
+                  <div className="bg-[#111111]/90 border border-black px-2 py-0.5 shadow-[1px_1px_0_#000000] max-w-[96%] flex items-center gap-1.5">
                     <span
-                      className={`block font-bold text-stone-900 tracking-tight truncate max-w-full leading-tight ${
+                      className={`block font-bold text-white mc-text-shadow truncate max-w-full leading-tight font-pixel ${
                         diameter >= 150
-                          ? 'text-xs sm:text-sm'
+                          ? 'text-xs'
                           : diameter >= 120
-                          ? 'text-[11px] sm:text-xs'
+                          ? 'text-[11px]'
                           : 'text-[10px]'
                       }`}
                     >
                       {person.name}
                     </span>
 
-                    {/* Hand-written Birthday Note */}
+                    {/* XP Level / Days Tag */}
                     <span
-                      className={`font-sketch font-bold tracking-wide leading-none mt-0.5 whitespace-nowrap ${
+                      className={`font-pixel font-bold whitespace-nowrap px-1 py-0.2 border border-black ${
                         person.daysUntil === 0
-                          ? 'text-rose-600 text-xs'
+                          ? 'bg-[#b71c1c] text-white mc-text-shadow'
                           : person.daysUntil <= 7
-                          ? 'text-amber-800 text-[11px]'
-                          : 'text-stone-600 text-[10px]'
-                      }`}
+                          ? 'bg-[#d97706] text-black'
+                          : 'bg-[#2b7730] text-[#55ff55] mc-text-shadow'
+                      } text-[9px]`}
                     >
                       {person.daysUntil === 0
-                        ? '🎉 Today!'
-                        : `in ${person.daysUntil}d`}
+                        ? 'TODAY!'
+                        : `${person.daysUntil}d`}
                     </span>
                   </div>
                 </div>
@@ -833,20 +811,20 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
           {/* Empty state if filtered query yields no results */}
           {filteredPeople.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 pointer-events-auto">
-              <div className="p-4 bg-[#fffefb] border-2 border-stone-800 rounded-2xl shadow-[3px_3px_0px_#292524] flex flex-col items-center max-w-sm">
-                <HelpCircle className="w-10 h-10 text-stone-400 mb-2" />
-                <p className="text-sm font-bold text-stone-900">No loved ones match the current filter</p>
-                <p className="text-xs text-stone-500 mt-1 font-sketch text-base">
-                  Try selecting &quot;All Loved Ones&quot; or clearing your search.
+              <div className="p-6 mc-panel-dark border-2 border-black max-w-sm flex flex-col items-center shadow-[4px_4px_0_#000000]">
+                <HelpCircle className="w-10 h-10 text-[#888888] mb-2" />
+                <p className="text-sm font-bold text-white mc-text-shadow font-mc">NO PLAYERS FOUND</p>
+                <p className="text-xs text-[#a3a4ab] mt-1 font-pixel">
+                  No entities found in this chunk matching filter.
                 </p>
                 <button
                   onClick={() => {
                     setSelectedRelation('all');
                     setSearchQuery('');
                   }}
-                  className="mt-3 px-3.5 py-1.5 rounded-xl bg-stone-900 text-[#fffefb] text-xs font-bold shadow-[2px_2px_0px_#292524] border-2 border-stone-900"
+                  className="mt-4 mc-button px-4 py-2 text-xs"
                 >
-                  Reset Filters
+                  [ Clear Filter ]
                 </button>
               </div>
             </div>
@@ -854,28 +832,28 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         </div>
       </div>
 
-      {/* Bottom Legend & Status (Paper style) */}
-      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 pt-4 pb-2 mt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-600 border-t-2 border-dashed border-stone-300">
+      {/* Bottom Legend & Status (Minecraft HUD Style) */}
+      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 pt-3 pb-2 mt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#a3a4ab] border-t-2 border-[#26252b] font-pixel">
         <div className="flex flex-wrap items-center gap-4">
-          <span className="font-bold text-stone-900 flex items-center gap-1 font-sketch text-sm">
-            <Info className="w-3.5 h-3.5 text-stone-600" /> Sketchpad Guide:
+          <span className="font-mc text-[10px] text-[#ffffff] flex items-center gap-1 mc-text-shadow">
+            <Info className="w-3.5 h-3.5 text-[#55ffff]" /> CHUNK GUIDE:
           </span>
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full bg-[#fbcfe8] border-1.5 border-stone-800 shadow-[1px_1px_0px_#292524] inline-block" />
-            <span className="font-medium">&lt; 2 weeks (Bigger Circle)</span>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 bg-[#b71c1c] border border-black inline-block" />
+            <span className="text-white">&lt; 7 days (Crown)</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 rounded-full bg-[#ddd6fe] border-1.5 border-stone-800 shadow-[1px_1px_0px_#292524] inline-block" />
-            <span className="font-medium">1–3 months (Medium)</span>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 bg-[#d97706] border border-black inline-block" />
+            <span className="text-white">1–4 weeks (Large)</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-[#bbf7d0] border-1.5 border-stone-800 shadow-[1px_1px_0px_#292524] inline-block" />
-            <span className="font-medium">Later in year (Compact)</span>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 bg-[#2b7730] border border-black inline-block" />
+            <span className="text-white">Upcoming (Standard)</span>
           </div>
         </div>
 
-        <div className="text-xs font-sketch text-stone-600 font-bold">
-          Drawn for {filteredPeople.length} loved {filteredPeople.length === 1 ? 'one' : 'ones'}
+        <div className="font-mc text-[10px] text-[#80ff20] mc-text-shadow">
+          {filteredPeople.length} ENTITIES SPAWNED
         </div>
       </div>
     </div>
