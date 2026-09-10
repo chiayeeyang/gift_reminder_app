@@ -1,0 +1,7 @@
+{
+  "name": "Gift Tracker & Birthday Reminders",
+  "description": "Keep track of bought and handmade gift ideas, track budgets and crafting time, and set upcoming birthday and holiday reminders.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
