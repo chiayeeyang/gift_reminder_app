@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Person, GiftItem, OccasionType } from '../types';
 import { useGifts } from '../context/GiftContext';
-import { calculateDaysUntil, formatCurrency, getMilestoneBirthdayText } from '../utils/giftHelpers';
+import { calculateDaysUntil, formatCurrency, getMilestoneBirthdayText, getBirthdayHealth } from '../utils/giftHelpers';
 import { CuteFace } from './CuteFace';
+import { MinecraftHealthBar } from './MinecraftHealthBar';
 import {
   X,
   Calendar,
@@ -19,6 +20,9 @@ import {
   Scissors,
   Check,
   Tag,
+  Shield,
+  Skull,
+  RotateCcw,
 } from 'lucide-react';
 
 interface PersonGiftDetailProps {
@@ -36,7 +40,8 @@ export const PersonGiftDetail: React.FC<PersonGiftDetailProps> = ({
   onOpenPersonModal,
   onNavigateToAI,
 }) => {
-  const { gifts, updateGift, logCraftTime } = useGifts();
+  const { gifts, updateGift, logCraftTime, toggleGiftSent } = useGifts();
+  const [showTotemAnimation, setShowTotemAnimation] = useState(false);
 
   // Budget filter state
   const [budgetFilter, setBudgetFilter] = useState<'all' | 'under25' | 'under50' | 'under100' | 'within_budget'>('all');
@@ -46,6 +51,48 @@ export const PersonGiftDetail: React.FC<PersonGiftDetailProps> = ({
   // Days until next birthday
   const birthdayInfo = calculateDaysUntil(person.birthMonth, person.birthDay);
   const milestone = person.birthYear ? getMilestoneBirthdayText(person.birthYear, birthdayInfo.year) : null;
+
+  // Minecraft Birthday Life Bar Status
+  const healthInfo = useMemo(() => {
+    return getBirthdayHealth(person);
+  }, [person]);
+
+  const handleGiftSentToggle = () => {
+    const nextState = !healthInfo.isGiftSent;
+    toggleGiftSent(person.id, nextState);
+
+    if (nextState) {
+      setShowTotemAnimation(true);
+      setTimeout(() => setShowTotemAnimation(false), 3500);
+
+      // Play 8-bit Minecraft triumphant / heal chime
+      try {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          const now = ctx.currentTime;
+          const notes = healthInfo.isDead
+            ? [261.63, 329.63, 392.0, 523.25, 659.25, 783.99] // Totem revival chord
+            : [440, 554.37, 659.25, 880]; // Golden heart chime
+
+          notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = healthInfo.isDead ? 'triangle' : 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+            gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.08);
+            osc.stop(now + idx * 0.08 + 0.35);
+          });
+        }
+      } catch (e) {
+        // Safely ignore if browser blocks audio
+      }
+    }
+  };
 
   // Gifts for this person
   const personGifts = useMemo(() => {
@@ -201,6 +248,195 @@ export const PersonGiftDetail: React.FC<PersonGiftDetailProps> = ({
                       {interest}
                     </span>
                   ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* TOTEM OF UNDYING CELEBRATION BANNER */}
+          {showTotemAnimation && (
+            <div className="p-3.5 bg-[#d97706]/95 border-2 border-[#fef08a] shadow-[0_0_15px_#fef08a] animate-bounce flex items-center justify-center gap-3 text-center">
+              <Sparkles className="w-5 h-5 text-[#fef08a] shrink-0" />
+              <div>
+                <h4 className="font-mc text-xs text-[#fef08a] mc-text-shadow">
+                  ⚡ TOTEM OF UNDYING ACTIVATED!
+                </h4>
+                <p className="text-[11px] text-white font-bold">
+                  Life bar restored to 100% (20/20 HP)! {person.name} is saved and celebrated!
+                </p>
+              </div>
+              <Sparkles className="w-5 h-5 text-[#fef08a] shrink-0" />
+            </div>
+          )}
+
+          {/* GAMIFIED BIRTHDAY LIFE BAR & GIFT QUEST */}
+          <div
+            className={`p-4 mc-panel border-2 ${
+              healthInfo.isDead
+                ? 'border-[#ff5555] bg-[#2a1215]'
+                : healthInfo.isGiftSent
+                ? 'border-[#f59e0b] bg-[#1c1d18]'
+                : healthInfo.status === 'critical'
+                ? 'border-[#ff5555] bg-[#22161a]'
+                : 'border-black'
+            } space-y-3`}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#3c3d44] pb-2.5">
+              <div className="flex items-center gap-2">
+                {healthInfo.isDead ? (
+                  <Skull className="w-4 h-4 text-[#ff5555] animate-pulse" />
+                ) : healthInfo.isGiftSent ? (
+                  <Shield className="w-4 h-4 text-[#f59e0b]" />
+                ) : (
+                  <Heart
+                    className={`w-4 h-4 ${
+                      healthInfo.status === 'critical' ? 'text-[#ff5555] animate-bounce' : 'text-[#ff5555]'
+                    }`}
+                  />
+                )}
+                <h3 className="font-mc text-[10px] text-white mc-text-shadow uppercase tracking-wider">
+                  PLAYER HEALTH & BIRTHDAY LIFE BAR
+                </h3>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={`px-2 py-0.5 text-xs font-bold border border-black ${
+                    healthInfo.isDead
+                      ? 'bg-[#ff5555] text-white mc-text-shadow animate-pulse'
+                      : healthInfo.isGiftSent
+                      ? 'bg-[#d97706] text-black font-bold'
+                      : healthInfo.status === 'critical'
+                      ? 'bg-[#ff5555] text-white mc-text-shadow'
+                      : 'bg-[#2b7730] text-[#55ff55] mc-text-shadow'
+                  }`}
+                >
+                  {healthInfo.isDead
+                    ? '☠️ 0/20 HP • DIED'
+                    : healthInfo.isGiftSent
+                    ? '✨ 20/20 HP • SAFE'
+                    : `${healthInfo.currentHp}/20 HP`}
+                </span>
+              </div>
+            </div>
+
+            {/* The Minecraft Health Bar Hearts & Gauge */}
+            <div className="p-3 mc-slot bg-[#121115] border border-black space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="space-y-1">
+                  <span className="text-[11px] text-[#a3a4ab] block">
+                    {healthInfo.isDead
+                      ? 'Survival Status: DIED (Succumbed to gift deficiency)'
+                      : healthInfo.isGiftSent
+                      ? 'Survival Status: Protected by Gift (Full Golden Absorption)'
+                      : `Survival Status: ${healthInfo.daysLeft} days until birthday (Life bar countdown)`}
+                  </span>
+                  <MinecraftHealthBar
+                    currentHp={healthInfo.currentHp}
+                    maxHp={20}
+                    isGiftSent={healthInfo.isGiftSent}
+                    isDead={healthInfo.isDead}
+                    size="large"
+                    showLabel={true}
+                  />
+                </div>
+
+                <div className="text-right shrink-0">
+                  <span className="text-xs font-pixel text-[#ffea75] block">
+                    {healthInfo.isDead ? 'Countdown Expired' : `${healthInfo.daysLeft} Days Left`}
+                  </span>
+                  <span className="text-[10px] text-[#a3a4ab]">
+                    {healthInfo.isGiftSent
+                      ? 'Life bar restored'
+                      : healthInfo.isDead
+                      ? 'Respawn Required'
+                      : 'Send gift to reset HP'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full h-2 mc-slot p-0.5">
+                <div
+                  className={`h-full transition-all duration-300 ${
+                    healthInfo.isDead
+                      ? 'bg-[#374151]'
+                      : healthInfo.isGiftSent
+                      ? 'bg-[#fbbf24]'
+                      : healthInfo.status === 'critical'
+                      ? 'bg-[#ff5555]'
+                      : healthInfo.status === 'warning'
+                      ? 'bg-[#f59e0b]'
+                      : 'bg-[#22c55e]'
+                  }`}
+                  style={{ width: `${healthInfo.hpPercent}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Context Explainer */}
+            <p className="text-xs text-[#d1d5db] leading-relaxed">
+              {healthInfo.isDead ? (
+                <span className="text-[#ff9999] font-bold">
+                  ☠️ The birthday countdown ran out without a gift sent! Click "GIFT SENT" below to activate a Totem of Undying and resurrect {person.name} back to full health!
+                </span>
+              ) : healthInfo.isGiftSent ? (
+                <span className="text-[#fef08a]">
+                  ✨ Gift marked sent! {person.name}'s life bar is at 100% capacity (Golden Absorption Hearts). The life bar will reset on the next birthday cycle.
+                </span>
+              ) : healthInfo.status === 'critical' ? (
+                <span className="text-[#ff9999] font-bold">
+                  ⚠️ CRITICAL HEALTH: Only {healthInfo.daysLeft} days left until birthday! If the countdown hits 0 before a gift is sent, {person.name} will die! Click "GIFT SENT" to reset the life bar to 100%.
+                </span>
+              ) : (
+                <span>
+                  💡 Days left until birthday acts as this player's life bar (ticking down from 20 HP). Make sure to click <strong className="text-white">"GIFT SENT"</strong> before the birthday is up or this player dies!
+                </span>
+              )}
+            </p>
+
+            {/* Primary "GIFT SENT" Action Button */}
+            <div>
+              {healthInfo.isDead ? (
+                <button
+                  onClick={handleGiftSentToggle}
+                  className="w-full mc-button bg-[#d97706] hover:bg-[#b45309] text-white border-2 border-[#fef08a] py-3 px-4 font-bold text-xs flex items-center justify-center gap-2 shadow-[2px_2px_0_#000000] animate-pulse transition-none"
+                >
+                  <Sparkles className="w-4 h-4 text-[#fef08a]" />
+                  ⚡ RESPAWN PLAYER • CLICK "GIFT SENT" (Totem of Undying)
+                </button>
+              ) : !healthInfo.isGiftSent ? (
+                <button
+                  onClick={handleGiftSentToggle}
+                  className="w-full mc-button-emerald py-3 px-4 font-bold text-xs flex items-center justify-center gap-2 shadow-[2px_2px_0_#000000] hover:scale-[1.01] transition-transform"
+                >
+                  <Gift className="w-4 h-4 text-[#55ff55]" />
+                  🎁 CLICK "GIFT SENT" TO RESET LIFE BAR (Restore 20/20 HP)
+                </button>
+              ) : (
+                <div className="p-2.5 mc-slot bg-[#1b2b1e] border-2 border-[#22c55e] flex flex-col sm:flex-row items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#55ff55]" />
+                    <div>
+                      <span className="text-xs font-bold text-[#55ff55] block">
+                        GIFT SENT! (Life bar fully protected)
+                      </span>
+                      <span className="text-[10px] text-[#a3a4ab]">
+                        {person.giftSentDate
+                          ? `Marked sent on ${new Date(person.giftSentDate).toLocaleDateString()}`
+                          : 'Player saved for this birthday cycle'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleGiftSentToggle}
+                    className="mc-button px-2.5 py-1 text-[10px] text-[#ffaaaa] flex items-center gap-1 shrink-0"
+                    title="Undo gift sent status"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    Unmark / Undo
+                  </button>
                 </div>
               )}
             </div>

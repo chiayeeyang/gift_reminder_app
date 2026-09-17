@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Person } from '../types';
 import { useGifts } from '../context/GiftContext';
-import { calculateDaysUntil } from '../utils/giftHelpers';
+import { calculateDaysUntil, getBirthdayHealth } from '../utils/giftHelpers';
 import { CuteFace } from './CuteFace';
+import { MinecraftHealthBar } from './MinecraftHealthBar';
 import {
   Sparkles,
   Plus,
@@ -12,6 +13,10 @@ import {
   Zap,
   RotateCcw,
   HelpCircle,
+  Heart,
+  Skull,
+  Shield,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface LandingCirclesPageProps {
@@ -117,6 +122,8 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
     return 29;                             // 58px diameter
   }, []);
 
+  const [lifeFilter, setLifeFilter] = useState<'all' | 'dead' | 'critical' | 'gift_sent'>('all');
+
   // Calculate days until birthday and radius for each person
   const peopleWithProximity = useMemo(() => {
     const width = arenaDimensions.width || 600;
@@ -124,6 +131,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
     return people.map((person) => {
       const { days } = calculateDaysUntil(person.birthMonth, person.birthDay);
       const radius = getResponsiveRadius(days, width);
+      const health = getBirthdayHealth(person);
 
       let urgencyTier: 'today' | 'urgent' | 'soon' | 'upcoming' | 'later' = 'later';
       if (days === 0) {
@@ -148,9 +156,28 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         radius,
         urgencyTier,
         giftCount: personGifts.length,
+        health,
       };
     });
   }, [people, gifts, arenaDimensions.width, getResponsiveRadius]);
+
+  // Overall survival statistics
+  const survivalStats = useMemo(() => {
+    let deadCount = 0;
+    let criticalCount = 0;
+    let giftSentCount = 0;
+    let healthyCount = 0;
+
+    people.forEach((p) => {
+      const h = getBirthdayHealth(p);
+      if (h.isDead) deadCount++;
+      else if (h.isGiftSent) giftSentCount++;
+      else if (h.isCritical) criticalCount++;
+      else healthyCount++;
+    });
+
+    return { deadCount, criticalCount, giftSentCount, healthyCount };
+  }, [people]);
 
   // Filtered people
   const filteredPeople = useMemo(() => {
@@ -158,6 +185,10 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
       if (selectedRelation !== 'all' && p.relationship !== selectedRelation) {
         return false;
       }
+      if (lifeFilter === 'dead' && !p.health.isDead) return false;
+      if (lifeFilter === 'critical' && (!p.health.isCritical || p.health.isDead)) return false;
+      if (lifeFilter === 'gift_sent' && !p.health.isGiftSent) return false;
+
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchName = p.name.toLowerCase().includes(q);
@@ -166,7 +197,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
       }
       return true;
     });
-  }, [peopleWithProximity, selectedRelation, searchQuery]);
+  }, [peopleWithProximity, selectedRelation, lifeFilter, searchQuery]);
 
   // Initialize or update physics circles positions
   useEffect(() => {
@@ -210,9 +241,9 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
           height - targetRadius - 6
         );
 
-        // Gentle random initial velocity
+        // Gentle, slow initial drift
         const angle = Math.random() * Math.PI * 2;
-        const speed = 0.6 + Math.random() * 0.6;
+        const speed = 0.15 + Math.random() * 0.15;
 
         newCircles.push({
           id: person.id,
@@ -293,34 +324,55 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
       pointer.prevX = pointer.x;
       pointer.prevY = pointer.y;
 
-      // 1. Pointer Interaction / Hover / Touch Impulse
+      // 1. Pointer Interaction / Hover & Proximity Braking (Responsive yet easy to click)
       if (pointer.isInside && !draggedCircleRef.current) {
+        // Proximity detection zone: broad enough to react to approaching cursor
+        const proximityMargin = width < 500 ? 32 : 46;
+
         for (let i = 0; i < circles.length; i++) {
           const c = circles[i];
           const mdx = c.x - pointer.x;
           const mdy = c.y - pointer.y;
           const mdist = Math.hypot(mdx, mdy);
-
-          // Interaction boundary: larger on mobile touch for easy interaction
-          const interactDist = c.radius + (width < 500 ? 24 : 18);
+          const interactDist = c.radius + proximityMargin;
 
           if (mdist < interactDist) {
             c.isHovered = true;
 
-            // Apply push impulse away from finger/mouse
+            // Proximity factor: 1.0 when pointer is right at the avatar, scaling down to 0 at outer boundary
+            const proximityFactor = Math.max(0, (interactDist - mdist) / interactDist);
+
+            // 1. Brush & wake reaction from moving cursor:
+            // Transfer gentle cursor momentum so avatars playfully part and sway as cursor moves past
+            const pointerSpeed = Math.hypot(pointer.vx, pointer.vy);
+            if (pointerSpeed > 0.2) {
+              const brushImpulse = 0.18 * proximityFactor;
+              c.vx += pointer.vx * brushImpulse * dt;
+              c.vy += pointer.vy * brushImpulse * dt;
+            }
+
+            // 2. Subtle elastic nudge away from cursor center:
+            // Noticeable enough to feel physically responsive and alive,
+            // while remaining gentle so it never runs away frantically
             const pushDirX = mdist > 0.001 ? mdx / mdist : 1;
             const pushDirY = mdist > 0.001 ? mdy / mdist : 0;
-            const pushStrength = Math.min(4.8, (interactDist - mdist) * 0.2 + 1.0);
+            const subtlePush = 0.35 * Math.pow(proximityFactor, 1.3);
+            c.vx += pushDirX * subtlePush * dt;
+            c.vy += pushDirY * subtlePush * dt;
 
-            c.vx += (pushDirX * pushStrength + pointer.vx * 0.4) * dt;
-            c.vy += (pushDirY * pushStrength + pointer.vy * 0.4) * dt;
+            // 3. Hover stabilization when cursor is directly over/aiming at avatar:
+            // Smoothly dampens higher speeds so it stays steady for clicking
+            if (mdist < c.radius + 10) {
+              c.vx *= Math.pow(0.88, dt);
+              c.vy *= Math.pow(0.88, dt);
+            }
           } else {
             c.isHovered = false;
           }
         }
       }
 
-      // 2. Pairwise Circle-to-Circle Elastic Collisions
+      // 2. Pairwise Circle-to-Circle Soft Cushioned Collisions
       for (let i = 0; i < circles.length; i++) {
         for (let j = i + 1; j < circles.length; j++) {
           const c1 = circles[i];
@@ -356,77 +408,81 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
             const dvy = c2.vy - c1.vy;
             const velAlongNormal = dvx * nx + dvy * ny;
 
-            // Bounce when moving towards each other
+            // Soft cushioned bounce when moving towards each other
             if (velAlongNormal < 0) {
-              const restitution = 0.9;
+              const restitution = 0.25; // Soft cushioned bump (prevents aggressive pinball ricochet)
               const impulse = -(1 + restitution) * velAlongNormal / (1 / c1.mass + 1 / c2.mass);
 
               if (!c1.isDragging) {
                 c1.vx -= (impulse / c1.mass) * nx;
                 c1.vy -= (impulse / c1.mass) * ny;
+                c1.vx *= 0.88;
+                c1.vy *= 0.88;
               }
               if (!c2.isDragging) {
                 c2.vx += (impulse / c2.mass) * nx;
                 c2.vy += (impulse / c2.mass) * ny;
+                c2.vx *= 0.88;
+                c2.vy *= 0.88;
               }
 
-              c1.collisionEnergy = 1.0;
-              c2.collisionEnergy = 1.0;
+              c1.collisionEnergy = 0.3;
+              c2.collisionEnergy = 0.3;
             }
           }
         }
       }
 
-      // 3. Wall Collisions (Screen Container Bounds)
+      // 3. Wall Collisions (Screen Container Bounds) - Soft Perimeter Cushion
       for (let i = 0; i < circles.length; i++) {
         const c = circles[i];
         if (c.isDragging) continue;
 
-        const wallRestitution = 0.88;
+        const wallRestitution = 0.32; // Soft cushion against walls
 
         // Left wall
         if (c.x - c.radius < 0) {
           c.x = c.radius;
           c.vx = Math.abs(c.vx) * wallRestitution;
-          c.collisionEnergy = 0.6;
+          c.collisionEnergy = 0.2;
         }
         // Right wall
         if (c.x + c.radius > width) {
           c.x = width - c.radius;
           c.vx = -Math.abs(c.vx) * wallRestitution;
-          c.collisionEnergy = 0.6;
+          c.collisionEnergy = 0.2;
         }
         // Top wall
         if (c.y - c.radius < 0) {
           c.y = c.radius;
           c.vy = Math.abs(c.vy) * wallRestitution;
-          c.collisionEnergy = 0.6;
+          c.collisionEnergy = 0.2;
         }
         // Bottom wall
         if (c.y + c.radius > height) {
           c.y = height - c.radius;
           c.vy = -Math.abs(c.vy) * wallRestitution;
-          c.collisionEnergy = 0.6;
+          c.collisionEnergy = 0.2;
         }
 
-        // Damping / Air resistance
-        c.vx *= Math.pow(0.992, dt);
-        c.vy *= Math.pow(0.992, dt);
+        // Calming air resistance / damping
+        c.vx *= Math.pow(0.975, dt);
+        c.vy *= Math.pow(0.975, dt);
 
-        // Speed clamping
+        // Clamped max speed allowing dynamic cursor response while preventing wild bouncing
         const speed = Math.hypot(c.vx, c.vy);
-        const maxSpeed = width < 500 ? 9.0 : 12.0;
+        const maxSpeed = width < 500 ? 1.4 : 1.7;
         if (speed > maxSpeed) {
           c.vx = (c.vx / speed) * maxSpeed;
           c.vy = (c.vy / speed) * maxSpeed;
         }
 
-        // Ambient gentle buoyancy (they wander freely across the arena)
-        const minSpeed = width < 500 ? 0.3 : 0.4;
-        if (speed < minSpeed) {
-          const driftAngle = (c.id.charCodeAt(0) * 0.7 + now * 0.0003) % (Math.PI * 2);
-          c.vx += Math.cos(driftAngle) * 0.07 * dt;
-          c.vy += Math.sin(driftAngle) * 0.07 * dt;
+        // Ambient gentle buoyancy (slow, peaceful floating wander)
+        const targetMinSpeed = width < 500 ? 0.12 : 0.16;
+        if (speed < targetMinSpeed) {
+          const driftAngle = (c.id.charCodeAt(0) * 0.7 + now * 0.00015) % (Math.PI * 2);
+          c.vx += Math.cos(driftAngle) * 0.015 * dt;
+          c.vy += Math.sin(driftAngle) * 0.015 * dt;
         }
 
         // Update position
@@ -435,7 +491,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
 
         // Decay collision energy
         if (c.collisionEnergy > 0) {
-          c.collisionEnergy = Math.max(0, c.collisionEnergy - 0.04 * dt);
+          c.collisionEnergy = Math.max(0, c.collisionEnergy - 0.05 * dt);
         }
       }
 
@@ -446,12 +502,16 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         if (el) {
           const left = c.x - c.radius;
           const top = c.y - c.radius;
-          el.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+          const scale = c.isHovered ? 1.06 : 1.0;
+          el.style.transform = `translate3d(${left}px, ${top}px, 0) scale(${scale})`;
+          el.style.zIndex = c.isHovered ? '25' : '10';
 
-          if (c.collisionEnergy > 0.3) {
-            el.style.filter = `drop-shadow(0 0 ${Math.round(c.collisionEnergy * 6)}px ${c.person.avatarColor}99)`;
+          if (c.isHovered) {
+            el.style.filter = 'drop-shadow(0 0 8px #ffff55) drop-shadow(4px 4px 0 #000000)';
+          } else if (c.collisionEnergy > 0.3) {
+            el.style.filter = `drop-shadow(0 0 ${Math.round(c.collisionEnergy * 6)}px ${c.person.avatarColor}99) drop-shadow(3px 3px 0 #000000)`;
           } else {
-            el.style.filter = '';
+            el.style.filter = 'drop-shadow(3px 3px 0 #000000)';
           }
         }
       }
@@ -467,15 +527,15 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
     };
   }, []);
 
-  // Nudge / scatter all circles with an energetic impulse
+  // Nudge / scatter all circles with a gentle impulse
   const handleNudgeAll = useCallback(() => {
     const circles = physicsCirclesRef.current;
     circles.forEach((c) => {
       const angle = Math.random() * Math.PI * 2;
-      const boost = 3.5 + Math.random() * 4.0;
+      const boost = 0.5 + Math.random() * 0.4;
       c.vx += Math.cos(angle) * boost;
       c.vy += Math.sin(angle) * boost;
-      c.collisionEnergy = 1.0;
+      c.collisionEnergy = 0.4;
     });
   }, []);
 
@@ -498,8 +558,8 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
       c.x = padX + col * cellW + cellW / 2;
       c.y = padY + row * cellH + cellH / 2;
       const angle = Math.random() * Math.PI * 2;
-      c.vx = Math.cos(angle) * 1.2;
-      c.vy = Math.sin(angle) * 1.2;
+      c.vx = Math.cos(angle) * 0.18;
+      c.vy = Math.sin(angle) * 0.18;
     });
   }, []);
 
@@ -525,15 +585,25 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
       const circle = draggedCircleRef.current;
       const dx = x - circle.dragStartX;
       const dy = y - circle.dragStartY;
-      if (Math.hypot(dx, dy) > 5) {
+      if (Math.hypot(dx, dy) > 8) {
         circle.hasMovedDuringDrag = true;
       }
       const { width, height } = containerSizeRef.current;
       circle.x = Math.max(circle.radius, Math.min(width - circle.radius, x));
       circle.y = Math.max(circle.radius, Math.min(height - circle.radius, y));
-      // Give realistic release/throw velocity
-      circle.vx = pointerRef.current.vx * 1.2;
-      circle.vy = pointerRef.current.vy * 1.2;
+      
+      // Gentle release/throw velocity
+      const maxReleaseSpeed = 1.0;
+      const releaseVx = pointerRef.current.vx * 0.35;
+      const releaseVy = pointerRef.current.vy * 0.35;
+      const releaseSpeed = Math.hypot(releaseVx, releaseVy);
+      if (releaseSpeed > maxReleaseSpeed) {
+        circle.vx = (releaseVx / releaseSpeed) * maxReleaseSpeed;
+        circle.vy = (releaseVy / releaseSpeed) * maxReleaseSpeed;
+      } else {
+        circle.vx = releaseVx;
+        circle.vy = releaseVy;
+      }
     }
   };
 
@@ -552,6 +622,14 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
     }
   };
 
+  const lastSelectTimeRef = useRef<number>(0);
+  const handleSelectSafe = useCallback((p: Person) => {
+    const now = Date.now();
+    if (now - lastSelectTimeRef.current < 400) return;
+    lastSelectTimeRef.current = now;
+    onSelectPerson(p);
+  }, [onSelectPerson]);
+
   const handlePointerUp = () => {
     if (draggedCircleRef.current) {
       const circle = draggedCircleRef.current;
@@ -561,7 +639,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
 
       // If user tapped cleanly without dragging, open dossier!
       if (!wasDragging) {
-        onSelectPerson(circle.person);
+        handleSelectSafe(circle.person);
       }
     }
   };
@@ -662,6 +740,71 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         </div>
       </div>
 
+      {/* BIRTHDAY LIFE BAR SURVIVAL HUD */}
+      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 pb-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="font-mc text-[9px] sm:text-[10px] text-[#ffea75] flex items-center gap-1 mc-text-shadow">
+            <Heart className="w-3.5 h-3.5 text-[#ff5555]" /> LIFE BAR QUEST:
+          </span>
+
+          <button
+            onClick={() => setLifeFilter(lifeFilter === 'dead' ? 'all' : 'dead')}
+            className={`px-2 py-0.5 text-xs font-pixel border flex items-center gap-1 ${
+              lifeFilter === 'dead'
+                ? 'bg-[#ff5555] text-white border-white'
+                : survivalStats.deadCount > 0
+                ? 'bg-[#3b1517] text-[#ff9999] border-[#ff5555] animate-pulse'
+                : 'bg-[#212026] text-[#a3a4ab] border-black'
+            }`}
+            title="Filter dead players"
+          >
+            <Skull className="w-3 h-3 text-[#ff5555]" />
+            <span>{survivalStats.deadCount} Died (0 HP)</span>
+          </button>
+
+          <button
+            onClick={() => setLifeFilter(lifeFilter === 'critical' ? 'all' : 'critical')}
+            className={`px-2 py-0.5 text-xs font-pixel border flex items-center gap-1 ${
+              lifeFilter === 'critical'
+                ? 'bg-[#d97706] text-black border-white'
+                : survivalStats.criticalCount > 0
+                ? 'bg-[#332211] text-[#fef08a] border-[#f59e0b]'
+                : 'bg-[#212026] text-[#a3a4ab] border-black'
+            }`}
+            title="Filter critical players"
+          >
+            <AlertTriangle className="w-3 h-3 text-[#f59e0b]" />
+            <span>{survivalStats.criticalCount} Critical</span>
+          </button>
+
+          <button
+            onClick={() => setLifeFilter(lifeFilter === 'gift_sent' ? 'all' : 'gift_sent')}
+            className={`px-2 py-0.5 text-xs font-pixel border flex items-center gap-1 ${
+              lifeFilter === 'gift_sent'
+                ? 'bg-[#22c55e] text-white border-white'
+                : 'bg-[#212026] text-[#a3a4ab] border-black'
+            }`}
+            title="Filter players with gift sent"
+          >
+            <Shield className="w-3 h-3 text-[#55ff55]" />
+            <span>{survivalStats.giftSentCount} Saved (20 HP)</span>
+          </button>
+
+          {lifeFilter !== 'all' && (
+            <button
+              onClick={() => setLifeFilter('all')}
+              className="px-1.5 py-0.5 text-[10px] text-[#ffaaaa] underline font-pixel"
+            >
+              [Clear Filter]
+            </button>
+          )}
+        </div>
+
+        <div className="text-[10px] text-[#a3a4ab] font-pixel flex items-center gap-1">
+          <span>Click player profile to press <strong className="text-white">"Gift Sent"</strong> & reset life bar</span>
+        </div>
+      </div>
+
       {/* THE MINECRAFT ARENA CONTAINER (Touch & Pointer Enabled) */}
       <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 flex-1 flex flex-col">
         <div
@@ -694,8 +837,8 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
             <div className="flex items-center gap-1.5 px-2 py-1 mc-panel-dark border-2 border-black text-[#ffffff] text-xs font-pixel shadow-[2px_2px_0_#000000]">
               <span className="w-2 h-2 bg-[#55ff55] border border-black animate-pulse" />
               <span className="mc-text-shadow text-[#80ff20] font-pixel text-[10px] sm:text-xs tracking-wide">
-                <span className="hidden sm:inline">⛏️ ARENA ACTIVE • Touch or hover to bounce</span>
-                <span className="sm:hidden">⛏️ ARENA • Tap or fling</span>
+                <span className="hidden sm:inline">⛏️ ARENA ACTIVE • Calm drift • Tap or hover player</span>
+                <span className="sm:hidden">⛏️ ARENA • Tap player to open</span>
               </span>
             </div>
 
@@ -740,7 +883,12 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                 onPointerEnter={() => setHoveredPersonId(person.id)}
                 onPointerLeave={() => setHoveredPersonId(null)}
                 onPointerDown={(e) => handleCirclePointerDown(e, person.id)}
-                className="absolute top-0 left-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing will-change-transform z-10 touch-none"
+                onPointerUp={handlePointerUp}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelectSafe(person);
+                }}
+                className="absolute top-0 left-0 flex flex-col items-center justify-center cursor-pointer active:cursor-grabbing will-change-transform z-10 touch-none"
                 style={{
                   width: diameter,
                   height: diameter,
@@ -774,8 +922,8 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                   <rect x="3" y="94" width="94" height="3" fill="#000000" opacity="0.8" />
                   <rect x="94" y="3" width="3" height="94" fill="#000000" opacity="0.8" />
 
-                  {/* Birthday Celebration Crown / Helmet if <= 7 days or today! */}
-                  {(person.urgencyTier === 'urgent' || person.urgencyTier === 'today') && (
+                  {/* Birthday Celebration Crown / Helmet if alive & <= 7 days or today! */}
+                  {!person.health.isDead && (person.urgencyTier === 'urgent' || person.urgencyTier === 'today') && (
                     <g transform="translate(20, -10)">
                       {/* Pixelated Golden Crown */}
                       <rect x="0" y="0" width="60" height="16" fill="#000000" />
@@ -792,8 +940,28 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                   )}
                 </svg>
 
+                {/* FLOATING HEALTH / SURVIVAL STATUS BADGE */}
+                {person.health.isDead ? (
+                  <div className="absolute -top-3.5 z-30 px-1 py-0.2 bg-[#b71c1c] border border-black text-white text-[8px] sm:text-[9px] font-pixel mc-text-shadow animate-pulse flex items-center gap-0.5 shadow-[1px_1px_0_#000000]">
+                    <span>☠️ DIED</span>
+                  </div>
+                ) : person.health.isGiftSent ? (
+                  <div className="absolute -top-3.5 z-30 px-1 py-0.2 bg-[#d97706] border border-black text-black text-[8px] sm:text-[9px] font-pixel font-bold flex items-center gap-0.5 shadow-[1px_1px_0_#000000]">
+                    <span>✨ SAVED</span>
+                  </div>
+                ) : person.health.isCritical ? (
+                  <div className="absolute -top-3.5 z-30 px-1 py-0.2 bg-[#ff5555] border border-black text-white text-[8px] sm:text-[9px] font-pixel mc-text-shadow animate-bounce flex items-center gap-0.5 shadow-[1px_1px_0_#000000]">
+                    <span>⚠️ LOW HP</span>
+                  </div>
+                ) : null}
+
                 {/* THE MINECRAFT 8x8 / 16x16 PLAYER HEAD */}
-                <div className="relative flex items-center justify-center pointer-events-none -mt-0.5 z-10">
+                <div
+                  className="relative flex items-center justify-center pointer-events-none -mt-0.5 z-10"
+                  style={{
+                    filter: person.health.isDead ? 'grayscale(0.9) contrast(1.1) opacity(0.85)' : undefined,
+                  }}
+                >
                   <CuteFace
                     name={person.name}
                     config={person.cuteFace}
@@ -802,33 +970,55 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                   />
                 </div>
 
-                {/* MINECRAFT PLAYER NAMETAG */}
-                <div className="absolute -bottom-2.5 inset-x-0.5 flex flex-col items-center justify-center pointer-events-none z-20">
-                  <div className="bg-[#111111]/90 border border-black px-1.5 py-0.2 shadow-[1px_1px_0_#000000] max-w-[98%] flex items-center gap-1">
-                    <span
-                      className={`block font-bold text-white mc-text-shadow truncate max-w-full leading-tight font-pixel ${
-                        diameter >= 80
-                          ? 'text-xs'
-                          : diameter >= 54
-                          ? 'text-[10px]'
-                          : 'text-[9px]'
-                      }`}
-                    >
-                      {person.name}
-                    </span>
+                {/* MINECRAFT PLAYER NAMETAG & HEALTH BAR */}
+                <div className="absolute -bottom-3 inset-x-0.5 flex flex-col items-center justify-center pointer-events-none z-20">
+                  <div className="bg-[#111111]/95 border border-black px-1.5 py-0.5 shadow-[1px_1px_0_#000000] max-w-[98%] flex flex-col items-center gap-0.5">
+                    <div className="flex items-center gap-1 max-w-full">
+                      <span
+                        className={`block font-bold text-white mc-text-shadow truncate max-w-full leading-tight font-pixel ${
+                          diameter >= 80
+                            ? 'text-xs'
+                            : diameter >= 54
+                            ? 'text-[10px]'
+                            : 'text-[9px]'
+                        }`}
+                      >
+                        {person.name}
+                      </span>
 
-                    {/* XP Level / Days Tag */}
-                    <span
-                      className={`font-pixel font-bold whitespace-nowrap px-0.5 py-0.2 border border-black ${
-                        person.daysUntil === 0
-                          ? 'bg-[#b71c1c] text-white mc-text-shadow'
-                          : person.daysUntil <= 7
-                          ? 'bg-[#d97706] text-black'
-                          : 'bg-[#2b7730] text-[#55ff55] mc-text-shadow'
-                      } text-[8px] sm:text-[9px]`}
-                    >
-                      {person.daysUntil === 0 ? 'TODAY!' : `${person.daysUntil}d`}
-                    </span>
+                      {/* HP Level Badge */}
+                      <span
+                        className={`font-pixel font-bold whitespace-nowrap px-0.5 py-0.2 border border-black ${
+                          person.health.isDead
+                            ? 'bg-[#b71c1c] text-white mc-text-shadow animate-pulse'
+                            : person.health.isGiftSent
+                            ? 'bg-[#d97706] text-black font-bold'
+                            : person.health.isCritical
+                            ? 'bg-[#ff5555] text-white mc-text-shadow'
+                            : 'bg-[#2b7730] text-[#55ff55] mc-text-shadow'
+                        } text-[8px] sm:text-[9px]`}
+                      >
+                        {person.health.isDead
+                          ? '☠️ 0 HP'
+                          : person.health.isGiftSent
+                          ? '✨ 20 HP'
+                          : `${person.health.currentHp} HP`}
+                      </span>
+                    </div>
+
+                    {/* Compact Minecraft Heart Bar */}
+                    {(diameter >= 54 || isHovered) && (
+                      <div className="pt-0.5 scale-90 origin-center">
+                        <MinecraftHealthBar
+                          currentHp={person.health.currentHp}
+                          maxHp={20}
+                          isGiftSent={person.health.isGiftSent}
+                          isDead={person.health.isDead}
+                          size="compact"
+                          showLabel={false}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

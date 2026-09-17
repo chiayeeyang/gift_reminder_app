@@ -11,6 +11,7 @@ interface GiftContextType {
   addPerson: (person: Omit<Person, 'id'>) => Person;
   updatePerson: (id: string, updates: Partial<Person>) => void;
   deletePerson: (id: string) => void;
+  toggleGiftSent: (personId: string, forcedState?: boolean) => void;
   addGift: (gift: Omit<GiftItem, 'id' | 'createdAt'>) => GiftItem;
   updateGift: (id: string, updates: Partial<GiftItem>) => void;
   deleteGift: (id: string) => void;
@@ -127,6 +128,22 @@ export const GiftProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Reassign gifts from this person to unassigned idea pool
     setGifts((prev) =>
       prev.map((g) => (g.recipientId === id ? { ...g, recipientId: 'unassigned' } : g))
+    );
+  };
+
+  const toggleGiftSent = (personId: string, forcedState?: boolean) => {
+    setPeople((prev) =>
+      prev.map((p) => {
+        if (p.id !== personId) return p;
+        const currentYear = new Date().getFullYear();
+        const nextState = forcedState !== undefined ? forcedState : !p.giftSent;
+        return {
+          ...p,
+          giftSent: nextState,
+          lastGiftSentYear: nextState ? currentYear : undefined,
+          giftSentDate: nextState ? new Date().toISOString() : undefined,
+        };
+      })
     );
   };
 
@@ -271,6 +288,7 @@ export const GiftProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addPerson,
         updatePerson,
         deletePerson,
+        toggleGiftSent,
         addGift,
         updateGift,
         deleteGift,

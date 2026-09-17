@@ -113,6 +113,11 @@ export interface Person {
   customEvents?: CustomDateEvent[];
   annualBudget?: number;
   notes?: string;
+
+  // Gamified Birthday Life Bar & Gift Sent Tracking
+  giftSent?: boolean;
+  lastGiftSentYear?: number;
+  giftSentDate?: string;
 }
 
 export interface UpcomingReminder {

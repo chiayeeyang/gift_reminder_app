@@ -239,3 +239,123 @@ export function getStatusBadge(status: GiftItem['status']) {
       return { label: status, bg: 'bg-stone-100 text-stone-700 border-stone-300' };
   }
 }
+
+export interface BirthdayHealth {
+  daysLeft: number;
+  daysPassed?: number;
+  nextDate: Date;
+  targetYear: number;
+  isGiftSent: boolean;
+  isDead: boolean;
+  isCritical: boolean;
+  currentHp: number; // 0 to 20
+  maxHp: number;     // 20
+  hpPercent: number; // 0 to 100
+  heartsCount: number; // 0 to 10
+  status: 'gift_sent' | 'dead' | 'critical' | 'warning' | 'healthy';
+  statusLabel: string;
+}
+
+/**
+ * Calculates a Minecraft-style health bar for a person's upcoming birthday.
+ * If gift is not marked sent, health ticks down as the birthday approaches.
+ * If the birthday arrives/passes without a gift sent, the player DIES (0 HP).
+ * Clicking "Gift Sent" resets the life bar to full 20/20 HP (or revives a dead player).
+ */
+export function getBirthdayHealth(person: Person, referenceDate: Date = new Date()): BirthdayHealth {
+  const currentYear = referenceDate.getFullYear();
+  const normalizedToday = new Date(currentYear, referenceDate.getMonth(), referenceDate.getDate(), 0, 0, 0);
+
+  // Check birthday on the current calendar year
+  const thisYearBirthday = new Date(currentYear, person.birthMonth - 1, person.birthDay, 0, 0, 0);
+  const diffDaysThisYear = Math.round((thisYearBirthday.getTime() - normalizedToday.getTime()) / (1000 * 60 * 60 * 24));
+
+  // Standard upcoming birthday calculation
+  const bdayInfo = calculateDaysUntil(person.birthMonth, person.birthDay, referenceDate);
+  const targetYear = bdayInfo.year;
+  const daysLeft = bdayInfo.days;
+
+  // Check if gift has been sent for this cycle
+  const isGiftSent = Boolean(
+    person.giftSent ||
+    (person.lastGiftSentYear && person.lastGiftSentYear >= currentYear)
+  );
+
+  // If gift is sent, life bar is completely restored and protected!
+  if (isGiftSent) {
+    return {
+      daysLeft,
+      nextDate: bdayInfo.nextDate,
+      targetYear,
+      isGiftSent: true,
+      isDead: false,
+      isCritical: false,
+      currentHp: 20,
+      maxHp: 20,
+      hpPercent: 100,
+      heartsCount: 10,
+      status: 'gift_sent',
+      statusLabel: 'GIFT SENT! (Life bar safe)',
+    };
+  }
+
+  // If gift was NOT sent:
+  // Death condition 1: Birthday is today (countdown expired at 0 days)
+  // Death condition 2: Birthday occurred recently this year without a gift sent
+  const recentlyMissed = diffDaysThisYear < 0 && diffDaysThisYear >= -30;
+  const isBirthdayToday = daysLeft === 0 || diffDaysThisYear === 0;
+
+  if (isBirthdayToday || recentlyMissed) {
+    return {
+      daysLeft: isBirthdayToday ? 0 : daysLeft,
+      daysPassed: recentlyMissed ? Math.abs(diffDaysThisYear) : 0,
+      nextDate: bdayInfo.nextDate,
+      targetYear,
+      isGiftSent: false,
+      isDead: true,
+      isCritical: false,
+      currentHp: 0,
+      maxHp: 20,
+      hpPercent: 0,
+      heartsCount: 0,
+      status: 'dead',
+      statusLabel: isBirthdayToday
+        ? 'DIED! Birthday arrived without a gift sent!'
+        : `DIED! Birthday passed ${Math.abs(diffDaysThisYear)}d ago with no gift!`,
+    };
+  }
+
+  // Active countdown: Scaled smoothly across a 60-day survival window
+  // 60+ days left -> 20 HP
+  // 1 to 59 days left -> 1 to 19 HP
+  const currentHp = daysLeft >= 60 ? 20 : Math.max(1, Math.min(19, Math.round((daysLeft / 60) * 20)));
+  const hpPercent = Math.round((currentHp / 20) * 100);
+  const heartsCount = Math.round((currentHp / 2) * 10) / 10;
+
+  let status: 'critical' | 'warning' | 'healthy' = 'healthy';
+  let statusLabel = `${currentHp}/20 HP • ${daysLeft}d until birthday`;
+
+  if (currentHp <= 4) {
+    status = 'critical';
+    statusLabel = `CRITICAL! ${currentHp}/20 HP • ${daysLeft}d until player dies!`;
+  } else if (currentHp <= 10) {
+    status = 'warning';
+    statusLabel = `WARNING! ${currentHp}/20 HP • ${daysLeft}d left`;
+  }
+
+  return {
+    daysLeft,
+    nextDate: bdayInfo.nextDate,
+    targetYear,
+    isGiftSent: false,
+    isDead: false,
+    isCritical: status === 'critical',
+    currentHp,
+    maxHp: 20,
+    hpPercent,
+    heartsCount,
+    status,
+    statusLabel,
+  };
+}
+

@@ -41,6 +41,7 @@ export const INITIAL_PEOPLE: Person[] = [
     ],
     annualBudget: 350,
     notes: 'Dropped a hint about wanting a custom hand-stitched camera strap or travel photo book.',
+    giftSent: false,
   },
   {
     id: 'person-2',
@@ -71,6 +72,7 @@ export const INITIAL_PEOPLE: Person[] = [
     },
     annualBudget: 150,
     notes: 'Mentioned wanting a proofing basket or ceramic oil drizzler.',
+    giftSent: false,
   },
   {
     id: 'person-3',
@@ -102,6 +104,7 @@ export const INITIAL_PEOPLE: Person[] = [
     },
     annualBudget: 200,
     notes: 'Big 60th birthday this October! We should do something sentimental.',
+    giftSent: false,
   },
   {
     id: 'person-4',
@@ -132,6 +135,9 @@ export const INITIAL_PEOPLE: Person[] = [
     },
     annualBudget: 80,
     notes: 'Talked about trying out that new space-themed worker placement board game.',
+    giftSent: true,
+    lastGiftSentYear: 2026,
+    giftSentDate: '2026-09-10T12:00:00.000Z',
   },
   {
     id: 'person-5',
