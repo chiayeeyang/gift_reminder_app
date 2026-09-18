@@ -17,8 +17,9 @@ import { Gift, Calendar, Heart, Sparkles, AlertTriangle, Flame } from 'lucide-re
 function AppContent() {
   const { reminders, gifts, people } = useGifts();
 
-  // Landing page with colorful circles as default view
-  const [activeTab, setActiveTab] = useState<ActiveTab>('circles');
+  // Default view is Villagers and Friends with Floating Avatars on landing page
+  const [activeTab, setActiveTab] = useState<ActiveTab>('people');
+  const [peopleViewMode, setPeopleViewMode] = useState<'floating' | 'roster'>('floating');
 
   // Selected person to reveal gift ideas, budget/time and preferences
   const [selectedPersonForDetail, setSelectedPersonForDetail] = useState<Person | null>(null);
@@ -71,8 +72,12 @@ function AppContent() {
   };
 
   const handleSelectGift = (giftId: string) => {
-    setSelectedGiftId(giftId);
-    setActiveTab('gifts');
+    const gift = gifts.find((g) => g.id === giftId);
+    if (gift) {
+      handleEditGift(gift);
+    } else {
+      setSelectedGiftId(giftId);
+    }
   };
 
   // Keep selectedPersonForDetail in sync with updated people
@@ -88,29 +93,34 @@ function AppContent() {
       {/* App Header */}
       <Header
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'people') {
+            setPeopleViewMode('floating');
+          }
+        }}
         onOpenNewGiftModal={() => handleOpenNewGift()}
         onOpenNewPersonModal={handleOpenNewPerson}
       />
 
       {/* Urgent Birthday Alert Bar (if any birthdays/events within 7 days) */}
-      {urgentReminders.length > 0 && activeTab !== 'circles' && activeTab !== 'reminders' && (
+      {urgentReminders.length > 0 && activeTab !== 'reminders' && (
         <div className="bg-[#b71c1c] text-[#ffffff] border-y-2 border-[#000000] px-4 py-2 text-xs font-pixel shadow-[0_2px_0_#000000]">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="text-sm">🔥</span>
               <span className="mc-text-shadow">
-                <strong className="text-[#ffea75]">URGENT QUEST:</strong> {urgentReminders[0].title} is coming up in{' '}
+                <strong className="text-[#ffea75]">URGENT EVENT:</strong> {urgentReminders[0].title} is coming up in{' '}
                 {urgentReminders[0].daysRemaining === 0
                   ? 'TODAY! 🎂'
                   : `${urgentReminders[0].daysRemaining} DAYS!`}
               </span>
             </div>
             <button
-              onClick={() => setActiveTab('circles')}
+              onClick={() => setActiveTab('reminders')}
               className="mc-button-gold px-3 py-0.5 text-xs font-pixel"
             >
-              [ View Circles ]
+              [ View Events ]
             </button>
           </div>
         </div>
@@ -118,11 +128,25 @@ function AppContent() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {activeTab === 'circles' && (
+        {(activeTab === 'people' || activeTab === 'circles') && peopleViewMode === 'floating' && (
           <LandingCirclesPage
             onSelectPerson={setSelectedPersonForDetail}
             onOpenNewPersonModal={handleOpenNewPerson}
             onOpenNewGiftModal={() => handleOpenNewGift()}
+            viewMode={peopleViewMode}
+            onToggleViewMode={setPeopleViewMode}
+          />
+        )}
+
+        {(activeTab === 'people' || activeTab === 'circles') && peopleViewMode === 'roster' && (
+          <PeopleTab
+            onOpenPersonModal={(p) => (p ? handleEditPerson(p) : handleOpenNewPerson())}
+            onAddGiftForPerson={(personId) => handleOpenNewGift(personId)}
+            onNavigateToAI={handleNavigateToAI}
+            onSelectGift={handleSelectGift}
+            onSelectPerson={setSelectedPersonForDetail}
+            viewMode={peopleViewMode}
+            onToggleViewMode={setPeopleViewMode}
           />
         )}
 
@@ -134,29 +158,6 @@ function AppContent() {
           />
         )}
 
-        {activeTab === 'gifts' && (
-          <GiftsTab
-            onOpenGiftModal={(gift) => (gift ? handleEditGift(gift) : handleOpenNewGift())}
-            selectedGiftId={selectedGiftId}
-          />
-        )}
-
-        {activeTab === 'people' && (
-          <PeopleTab
-            onOpenPersonModal={(p) => (p ? handleEditPerson(p) : handleOpenNewPerson())}
-            onAddGiftForPerson={(personId) => handleOpenNewGift(personId)}
-            onNavigateToAI={handleNavigateToAI}
-            onSelectGift={handleSelectGift}
-          />
-        )}
-
-        {activeTab === 'budget_time' && (
-          <BudgetAndTimeTab
-            onSelectGift={handleSelectGift}
-            onOpenNewGift={() => handleOpenNewGift()}
-          />
-        )}
-
         {activeTab === 'ai_studio' && (
           <AIAssistantTab
             initialRecipientName={aiTargetRecipient}
@@ -165,8 +166,6 @@ function AppContent() {
             onSelectGift={handleSelectGift}
           />
         )}
-
-        {activeTab === 'shopping_list' && <ShoppingListTab />}
       </main>
 
       {/* Footer */}

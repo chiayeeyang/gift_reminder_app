@@ -70,46 +70,22 @@ export const Header: React.FC<HeaderProps> = ({
 
   const navItems = [
     {
-      id: 'circles' as ActiveTab,
-      label: 'Player Heads',
-      icon: Smile,
-    },
-    {
-      id: 'reminders' as ActiveTab,
-      label: 'Quests & Events',
-      icon: Calendar,
-      badge: urgentCount > 0 ? `${urgentCount}!` : undefined,
-      badgeColor: 'bg-[#b71c1c] text-white',
-    },
-    {
-      id: 'gifts' as ActiveTab,
-      label: 'Loot Chest',
-      icon: Gift,
-      badge: `${gifts.length}`,
-      badgeColor: 'bg-[#d97706] text-black',
-    },
-    {
       id: 'people' as ActiveTab,
       label: 'Villagers & Friends',
       icon: Users,
     },
     {
-      id: 'budget_time' as ActiveTab,
-      label: 'Emeralds & XP',
-      icon: Clock,
-      badge: activeCraftsCount > 0 ? `${activeCraftsCount} DIY` : undefined,
-      badgeColor: 'bg-[#2b7730] text-white',
+      id: 'reminders' as ActiveTab,
+      label: 'Upcoming Events',
+      icon: Calendar,
+      badge: urgentCount > 0 ? `${urgentCount}!` : undefined,
+      badgeColor: 'bg-[#b71c1c] text-white',
     },
     {
       id: 'ai_studio' as ActiveTab,
-      label: 'Crafting Table',
+      label: 'Gift Wizard',
       icon: Sparkles,
       highlight: true,
-    },
-    {
-      id: 'shopping_list' as ActiveTab,
-      label: 'Trade Checklist',
-      icon: ShoppingCart,
     },
   ];
 
@@ -121,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Logo */}
           <div
             className="flex items-center gap-3 cursor-pointer select-none"
-            onClick={() => onSelectTab('circles')}
+            onClick={() => onSelectTab('people')}
           >
             {/* Minecraft Chest Icon Box */}
             <div className="w-10 h-10 bg-[#8b8b8b] border-2 border-black shadow-[inset_2px_2px_0_#ffffff,inset_-2px_-2px_0_#373737] flex items-center justify-center text-amber-300">
@@ -157,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="mc-button px-3.5 py-2 text-xs flex items-center gap-1.5"
             >
               <Users className="w-3.5 h-3.5 text-stone-300" />
-              <span>Spawn Player</span>
+              <span>Add Player</span>
             </button>
 
             {/* Overflow menu for export/import/reset */}
@@ -328,7 +304,7 @@ export const Header: React.FC<HeaderProps> = ({
                 }}
                 className="mc-button py-1.5 px-3"
               >
-                + Spawn Player
+                + Add Player
               </button>
               <button
                 onClick={() => {

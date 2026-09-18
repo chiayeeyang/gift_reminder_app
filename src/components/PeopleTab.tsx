@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useGifts } from '../context/GiftContext';
 import { Person } from '../types';
-import { calculateDaysUntil, formatCurrency, formatRelativeDays } from '../utils/giftHelpers';
+import { calculateDaysUntil, formatCurrency, formatRelativeDays, getBirthdayHealth } from '../utils/giftHelpers';
 import { CuteFace } from './CuteFace';
+import { MinecraftHealthBar } from './MinecraftHealthBar';
 import {
   Plus,
   Edit2,
@@ -10,6 +11,8 @@ import {
   Calendar,
   Sparkles,
   Shirt,
+  Heart,
+  User,
 } from 'lucide-react';
 
 interface PeopleTabProps {
@@ -17,6 +20,9 @@ interface PeopleTabProps {
   onAddGiftForPerson: (personId: string) => void;
   onNavigateToAI: (name: string, relationship: string, interests: string) => void;
   onSelectGift: (giftId: string) => void;
+  onSelectPerson?: (person: Person) => void;
+  viewMode?: 'floating' | 'roster';
+  onToggleViewMode?: (mode: 'floating' | 'roster') => void;
 }
 
 export const PeopleTab: React.FC<PeopleTabProps> = ({
@@ -24,6 +30,9 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
   onAddGiftForPerson,
   onNavigateToAI,
   onSelectGift,
+  onSelectPerson,
+  viewMode = 'roster',
+  onToggleViewMode,
 }) => {
   const { people, gifts, deletePerson } = useGifts();
   const [relationFilter, setRelationFilter] = useState<string>('all');
@@ -98,12 +107,41 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
           </button>
         </div>
 
-        <button
-          onClick={() => onOpenPersonModal()}
-          className="mc-button-emerald px-3.5 py-1.5 text-xs flex items-center gap-1.5"
-        >
-          <Plus className="w-3.5 h-3.5" /> Spawn Player
-        </button>
+        <div className="flex items-center gap-2">
+          {onToggleViewMode && (
+            <div className="flex items-center mc-panel-dark border-2 border-black p-0.5">
+              <button
+                onClick={() => onToggleViewMode('floating')}
+                className={`px-2.5 py-1 text-xs font-pixel flex items-center gap-1 transition-none ${
+                  viewMode === 'floating'
+                    ? 'bg-[#404149] text-[#ffff55] border border-white font-bold'
+                    : 'text-stone-300 hover:text-white'
+                }`}
+                title="Switch to Floating Avatars"
+              >
+                <span>🎈 Avatars</span>
+              </button>
+              <button
+                onClick={() => onToggleViewMode('roster')}
+                className={`px-2.5 py-1 text-xs font-pixel flex items-center gap-1 transition-none ${
+                  viewMode === 'roster'
+                    ? 'bg-[#404149] text-[#ffff55] border border-white font-bold'
+                    : 'text-stone-300 hover:text-white'
+                }`}
+                title="Switch to Roster Grid"
+              >
+                <span>📋 Roster Grid</span>
+              </button>
+            </div>
+          )}
+
+          <button
+            onClick={() => onOpenPersonModal()}
+            className="mc-button-emerald px-3.5 py-1.5 text-xs flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add Player
+          </button>
+        </div>
       </div>
 
       {/* People Grid */}
@@ -116,6 +154,7 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
           const totalSpent = personGifts.reduce((sum, g) => sum + (g.actualPrice ?? g.estimatedPrice ?? 0), 0);
           const budget = person.annualBudget || 0;
           const budgetPct = budget > 0 ? Math.min(100, Math.round((totalSpent / budget) * 100)) : 0;
+          const health = getBirthdayHealth(person);
 
           return (
             <div
@@ -126,21 +165,31 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
                 {/* Header info */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 mc-slot flex items-center justify-center p-0.5 shrink-0">
+                    <div
+                      onClick={() => onSelectPerson?.(person)}
+                      className="w-12 h-12 mc-slot flex items-center justify-center p-0.5 shrink-0 cursor-pointer hover:border-black"
+                      title="View Player Profile"
+                    >
                       <CuteFace name={person.name} config={person.cuteFace} size={42} />
                     </div>
 
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-bold text-white mc-text-shadow font-pixel">{person.name}</h3>
-                        <span className="px-1.5 py-0.2 border border-black bg-[#26252b] text-[#a3a4ab] text-[10px] capitalize">
+                        <h3
+                          onClick={() => onSelectPerson?.(person)}
+                          className="text-base font-bold text-[#18181b] font-pixel cursor-pointer hover:underline"
+                          title="Open player profile & gifts"
+                        >
+                          {person.name}
+                        </h3>
+                        <span className="px-1.5 py-0.2 border border-black bg-[#212026] text-white text-[10px] capitalize font-medium">
                           {person.relationship}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2 text-xs text-[#a3a4ab] mt-1 font-pixel">
-                        <Calendar className="w-3.5 h-3.5 text-[#55ffff]" />
-                        <span className="text-white">
+                      <div className="flex items-center gap-2 text-xs text-[#27272a] mt-1 font-pixel font-medium">
+                        <Calendar className="w-3.5 h-3.5 text-[#0369a1]" />
+                        <span className="text-[#18181b] font-bold">
                           {months[person.birthMonth - 1]} {person.birthDay}
                         </span>
                         <span>■</span>
@@ -156,7 +205,7 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
                           {formatRelativeDays(days)}
                         </span>
                         {turningAge && (
-                          <span className="text-[#a3a4ab]">(Lvl {turningAge})</span>
+                          <span className="text-[#3f3f46] font-semibold">(Lvl {turningAge})</span>
                         )}
                       </div>
                     </div>
@@ -184,9 +233,34 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
                   </div>
                 </div>
 
+                {/* Birthday Life Bar widget */}
+                <div
+                  onClick={() => onSelectPerson?.(person)}
+                  className="mt-2.5 p-2 bg-[#1b1a1f] border border-black cursor-pointer hover:border-stone-400 transition-none"
+                  title="Click to view full dossier & register gift sent"
+                >
+                  <div className="flex items-center justify-between text-[11px] mb-1 font-pixel">
+                    <span className="text-white font-bold flex items-center gap-1">
+                      <Heart className="w-3 h-3 text-[#ef4444] fill-[#ef4444]" />
+                      Birthday Life Bar
+                    </span>
+                    <span className="text-xs font-bold text-stone-300">
+                      {health.isDead ? '💀 Player Out of Hearts' : health.isGiftSent ? '✨ Gift Sent (Safe)' : `${health.currentHp}/20 HP`}
+                    </span>
+                  </div>
+                  <MinecraftHealthBar
+                    currentHp={health.currentHp}
+                    maxHp={20}
+                    isGiftSent={health.isGiftSent}
+                    isDead={health.isDead}
+                    size="compact"
+                    showLabel={false}
+                  />
+                </div>
+
                 {/* Sizing & Measurements Box */}
                 {(person.sizes?.clothing || person.sizes?.shoe || person.sizes?.ring) && (
-                  <div className="mt-3 p-2 mc-panel-dark border border-black flex flex-wrap items-center gap-2 text-xs">
+                  <div className="mt-2.5 p-2 mc-panel-dark border border-black flex flex-wrap items-center gap-2 text-xs">
                     <span className="font-mc text-[9px] text-[#ffea75] flex items-center gap-1">
                       <Shirt className="w-3.5 h-3.5 text-[#ffea75]" /> ARMOR/SIZING:
                     </span>
@@ -222,32 +296,32 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
                   </div>
                 )}
 
-                {/* Likes / Dislikes notes */}
+                {/* Likes / Dislikes notes - High contrast dark readable text */}
                 {person.preferences?.likes && (
-                  <div className="mt-2 text-xs text-[#a3a4ab]">
-                    <strong className="text-[#55ff55]">Loves:</strong> {person.preferences.likes}
+                  <div className="mt-2 text-xs text-[#18181b] font-pixel">
+                    <strong className="text-[#15803d] font-bold">Loves:</strong> {person.preferences.likes}
                   </div>
                 )}
                 {person.preferences?.dislikes && (
-                  <div className="mt-0.5 text-xs text-[#a3a4ab]">
-                    <strong className="text-[#ff5555]">Avoids:</strong> {person.preferences.dislikes}
+                  <div className="mt-0.5 text-xs text-[#18181b] font-pixel">
+                    <strong className="text-[#b91c1c] font-bold">Avoids:</strong> {person.preferences.dislikes}
                   </div>
                 )}
 
-                {/* Emerald Budget Bar */}
+                {/* Emerald Budget Bar - High contrast dark readable text */}
                 {budget > 0 && (
-                  <div className="mt-3 pt-2.5 border-t border-[#3c3d44] space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-[#a3a4ab]">Annual Emerald Budget</span>
-                      <span className="text-[#55ff55] font-pixel">
+                  <div className="mt-3 pt-2.5 border-t border-black/30 space-y-1">
+                    <div className="flex items-center justify-between text-xs font-pixel">
+                      <span className="text-[#18181b] font-bold">Annual Emerald Budget</span>
+                      <span className="text-[#15803d] font-bold">
                         {formatCurrency(totalSpent)} / {formatCurrency(budget)} ({budgetPct}%)
                       </span>
                     </div>
                     {/* Minecraft Emerald Bar */}
-                    <div className="w-full h-2.5 bg-[#0a0a0c] border border-black p-0.5">
+                    <div className="w-full h-2.5 bg-[#18181b] border border-black p-0.5">
                       <div
                         className={`h-full ${
-                          budgetPct > 100 ? 'bg-[#b71c1c]' : 'bg-[#2b7730]'
+                          budgetPct > 100 ? 'bg-[#b71c1c]' : 'bg-[#15803d]'
                         } shadow-[inset_0_1px_0_#ffffff]`}
                         style={{ width: `${Math.min(100, budgetPct)}%` }}
                       />
@@ -256,19 +330,19 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
                 )}
 
                 {/* Planned Gifts List */}
-                <div className="mt-3 pt-2.5 border-t border-[#3c3d44]">
-                  <div className="flex items-center justify-between text-xs text-[#80ff20] font-mc text-[10px] mb-2 mc-text-shadow">
+                <div className="mt-3 pt-2.5 border-t border-black/30">
+                  <div className="flex items-center justify-between text-xs text-[#18181b] font-mc text-[10px] mb-2 font-bold">
                     <span>CHEST LOOT ({personGifts.length})</span>
                     <button
                       onClick={() => onAddGiftForPerson(person.id)}
-                      className="text-[#55ffff] hover:underline flex items-center gap-1 font-pixel text-xs"
+                      className="text-[#0369a1] hover:underline flex items-center gap-1 font-pixel text-xs font-bold"
                     >
                       <Plus className="w-3 h-3" /> Add Gift
                     </button>
                   </div>
 
                   {personGifts.length === 0 ? (
-                    <p className="text-xs text-[#777777] italic">No items stored in chest yet for {person.name}.</p>
+                    <p className="text-xs text-[#3f3f46] italic">No items stored in chest yet for {person.name}.</p>
                   ) : (
                     <div className="space-y-1.5">
                       {personGifts.slice(0, 3).map((gift) => (
@@ -295,7 +369,7 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
                         </div>
                       ))}
                       {personGifts.length > 3 && (
-                        <span className="text-[10px] text-[#a3a4ab] block text-right font-pixel">
+                        <span className="text-[10px] text-[#27272a] font-semibold block text-right font-pixel">
                           +{personGifts.length - 3} more items in chest
                         </span>
                       )}
@@ -305,22 +379,31 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({
               </div>
 
               {/* Card Footer Actions */}
-              <div className="mt-3 pt-2.5 border-t border-[#3c3d44] flex items-center justify-between gap-2">
+              <div className="mt-3 pt-2.5 border-t border-black/30 flex items-center justify-between gap-2">
                 <button
-                  onClick={() =>
-                    onNavigateToAI(person.name, person.relationship, person.interests.join(', '))
-                  }
-                  className="mc-button-gold px-3 py-1.5 text-xs flex items-center gap-1.5"
+                  onClick={() => onSelectPerson?.(person)}
+                  className="mc-button px-2.5 py-1.5 text-xs flex items-center gap-1 font-pixel"
                 >
-                  <Sparkles className="w-3.5 h-3.5" /> Craft AI Ideas
+                  <User className="w-3.5 h-3.5" /> View Profile
                 </button>
 
-                <button
-                  onClick={() => onAddGiftForPerson(person.id)}
-                  className="mc-button-emerald px-3 py-1.5 text-xs flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Plan Gift
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() =>
+                      onNavigateToAI(person.name, person.relationship, person.interests.join(', '))
+                    }
+                    className="mc-button-gold px-2.5 py-1.5 text-xs flex items-center gap-1"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" /> Gift Wizard
+                  </button>
+
+                  <button
+                    onClick={() => onAddGiftForPerson(person.id)}
+                    className="mc-button-emerald px-2.5 py-1.5 text-xs flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Plan Gift
+                  </button>
+                </div>
               </div>
             </div>
           );

@@ -68,13 +68,40 @@ body {
 /* Minecraft Classic Gray GUI Panel */
 .mc-panel {
   background-color: #c6c6c6;
-  color: #1f1f1f;
+  color: #18181b;
   border: 2px solid #000000;
   box-shadow: 
     inset 2px 2px 0px #ffffff,
     inset -2px -2px 0px #555555,
     3px 3px 0px #000000;
   border-radius: 0px !important;
+}
+
+/* Darken grey text inside light grey mc-panels for crystal-clear readability */
+.mc-panel .text-\[\#a3a4ab\],
+.mc-panel .text-stone-400,
+.mc-panel .text-stone-500,
+.mc-panel .text-gray-400,
+.mc-panel .text-gray-500,
+.mc-panel .text-\[\#888888\],
+.mc-panel .text-\[\#777777\],
+.mc-panel .text-zinc-400,
+.mc-panel .text-zinc-500,
+.mc-panel [class*="text-[#a3a4ab]"],
+.mc-panel [class*="text-[#888888]"],
+.mc-panel [class*="text-[#777777]"] {
+  color: #1f1f23 !important;
+}
+
+.mc-panel label {
+  color: #09090b !important;
+  font-weight: 700 !important;
+}
+
+.mc-panel p.text-\[\#a3a4ab\],
+.mc-panel p[class*="text-[#a3a4ab]"] {
+  color: #27272a !important;
+  font-weight: 500;
 }
 
 /* Minecraft Dark/Deepslate Panel */

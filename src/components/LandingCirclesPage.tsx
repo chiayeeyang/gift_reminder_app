@@ -23,6 +23,8 @@ interface LandingCirclesPageProps {
   onSelectPerson: (person: Person) => void;
   onOpenNewPersonModal: () => void;
   onOpenNewGiftModal: () => void;
+  viewMode?: 'floating' | 'roster';
+  onToggleViewMode?: (mode: 'floating' | 'roster') => void;
 }
 
 interface PhysicsCircle {
@@ -48,6 +50,8 @@ interface PhysicsCircle {
 export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
   onSelectPerson,
   onOpenNewPersonModal,
+  viewMode = 'floating',
+  onToggleViewMode,
 }) => {
   const { people, gifts } = useGifts();
   const [selectedRelation, setSelectedRelation] = useState<string>('all');
@@ -676,26 +680,53 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg sm:text-2xl font-mc text-[#ffffff] mc-text-shadow tracking-wider flex items-center gap-2">
-              <span>PLAYER HEADS ARENA</span>
+              <span>VILLAGERS & FRIENDS</span>
             </h1>
             <span className="px-1.5 sm:px-2 py-0.5 bg-[#2b7730] text-[#ffffff] border-2 border-black text-[10px] sm:text-xs font-pixel flex items-center gap-1 shadow-[2px_2px_0_#000000]">
               <Sparkles className="w-3 h-3 text-[#55ff55]" />
-              PHYSICS LIVE
+              FLOATING AVATARS
             </span>
           </div>
-          <p className="text-[11px] sm:text-xs text-[#a3a4ab] mt-0.5 mc-text-shadow-sm">
-            Drag, fling, or tap loved ones to open player gift quests. Closer birthdays wear gold helmets!
+          <p className="text-[11px] sm:text-xs text-stone-300 mt-0.5 mc-text-shadow-sm font-medium">
+            Tap or drag any floating avatar to view gift ideas, stats, and birthday life bar.
           </p>
         </div>
 
-        {/* Action button */}
+        {/* Action buttons & View Switcher */}
         <div className="flex items-center gap-2 shrink-0">
+          {onToggleViewMode && (
+            <div className="flex items-center mc-panel-dark border-2 border-black p-0.5">
+              <button
+                onClick={() => onToggleViewMode('floating')}
+                className={`px-2.5 py-1 text-xs font-pixel flex items-center gap-1 transition-none ${
+                  viewMode === 'floating'
+                    ? 'bg-[#404149] text-[#ffff55] border border-white font-bold'
+                    : 'text-stone-300 hover:text-white'
+                }`}
+                title="Floating Avatars"
+              >
+                <span>🎈 Avatars</span>
+              </button>
+              <button
+                onClick={() => onToggleViewMode('roster')}
+                className={`px-2.5 py-1 text-xs font-pixel flex items-center gap-1 transition-none ${
+                  viewMode === 'roster'
+                    ? 'bg-[#404149] text-[#ffff55] border border-white font-bold'
+                    : 'text-stone-300 hover:text-white'
+                }`}
+                title="Roster Grid"
+              >
+                <span>📋 Roster Grid</span>
+              </button>
+            </div>
+          )}
+
           <button
             onClick={onOpenNewPersonModal}
             className="mc-button-emerald px-3 sm:px-4 py-1.5 sm:py-2 text-xs flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4 text-[#a5d6a7]" />
-            <span>Spawn Player</span>
+            <span>Add Player</span>
           </button>
         </div>
       </div>
@@ -729,13 +760,13 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
 
         {/* Quick search input */}
         <div className="relative w-full sm:w-56">
-          <Search className="w-3.5 h-3.5 text-[#888888] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Search player..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-7.5 pr-2.5 py-1 mc-input text-xs placeholder-[#777777]"
+            className="w-full pl-7.5 pr-2.5 py-1 mc-input text-xs placeholder-stone-400 font-pixel"
           />
         </div>
       </div>
@@ -754,7 +785,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                 ? 'bg-[#ff5555] text-white border-white'
                 : survivalStats.deadCount > 0
                 ? 'bg-[#3b1517] text-[#ff9999] border-[#ff5555] animate-pulse'
-                : 'bg-[#212026] text-[#a3a4ab] border-black'
+                : 'bg-[#212026] text-stone-200 border-black'
             }`}
             title="Filter dead players"
           >
@@ -769,7 +800,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
                 ? 'bg-[#d97706] text-black border-white'
                 : survivalStats.criticalCount > 0
                 ? 'bg-[#332211] text-[#fef08a] border-[#f59e0b]'
-                : 'bg-[#212026] text-[#a3a4ab] border-black'
+                : 'bg-[#212026] text-stone-200 border-black'
             }`}
             title="Filter critical players"
           >
@@ -782,7 +813,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
             className={`px-2 py-0.5 text-xs font-pixel border flex items-center gap-1 ${
               lifeFilter === 'gift_sent'
                 ? 'bg-[#22c55e] text-white border-white'
-                : 'bg-[#212026] text-[#a3a4ab] border-black'
+                : 'bg-[#212026] text-stone-200 border-black'
             }`}
             title="Filter players with gift sent"
           >
@@ -800,7 +831,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
           )}
         </div>
 
-        <div className="text-[10px] text-[#a3a4ab] font-pixel flex items-center gap-1">
+        <div className="text-[10px] text-stone-300 font-pixel flex items-center gap-1">
           <span>Click player profile to press <strong className="text-white">"Gift Sent"</strong> & reset life bar</span>
         </div>
       </div>
@@ -1029,9 +1060,9 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
           {filteredPeople.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 pointer-events-auto">
               <div className="p-5 mc-panel-dark border-2 border-black max-w-xs flex flex-col items-center shadow-[4px_4px_0_#000000]">
-                <HelpCircle className="w-8 h-8 text-[#888888] mb-1.5" />
+                <HelpCircle className="w-8 h-8 text-stone-400 mb-1.5" />
                 <p className="text-xs sm:text-sm font-bold text-white mc-text-shadow font-mc">NO PLAYERS FOUND</p>
-                <p className="text-[11px] text-[#a3a4ab] mt-1 font-pixel">
+                <p className="text-[11px] text-stone-300 mt-1 font-pixel font-medium">
                   No entities found in this chunk matching filter.
                 </p>
                 <button
@@ -1050,7 +1081,7 @@ export const LandingCirclesPage: React.FC<LandingCirclesPageProps> = ({
       </div>
 
       {/* Bottom Legend & Status (Minecraft HUD Style) */}
-      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 pt-2.5 pb-2 mt-1.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#a3a4ab] border-t-2 border-[#26252b] font-pixel">
+      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 pt-2.5 pb-2 mt-1.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-300 border-t-2 border-[#26252b] font-pixel font-medium">
         <div className="flex flex-wrap items-center gap-3">
           <span className="font-mc text-[9px] sm:text-[10px] text-[#ffffff] flex items-center gap-1 mc-text-shadow">
             <Info className="w-3.5 h-3.5 text-[#55ffff]" /> CHUNK GUIDE:

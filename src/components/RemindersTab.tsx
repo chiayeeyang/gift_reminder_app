@@ -176,7 +176,7 @@ export const RemindersTab: React.FC<RemindersTabProps> = ({
           <div className="p-12 text-center mc-panel-dark border-2 border-black">
             <Gift className="w-10 h-10 text-[#555555] mx-auto mb-3" />
             <p className="text-base font-bold text-white mc-text-shadow font-mc">NO ACTIVE QUESTS IN CHUNK</p>
-            <p className="text-xs text-[#a3a4ab] mt-1 font-pixel">Try selecting &quot;All Quests&quot; or spawn a new player.</p>
+            <p className="text-xs text-[#a3a4ab] mt-1 font-pixel">Try selecting &quot;All Quests&quot; or add a new player.</p>
           </div>
         ) : (
           filteredReminders.map((reminder) => {
@@ -213,7 +213,7 @@ export const RemindersTab: React.FC<RemindersTabProps> = ({
 
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-sm font-bold text-[#ffffff] mc-text-shadow font-pixel">
+                        <h3 className="text-base font-bold text-[#18181b] font-pixel">
                           {reminder.title}
                         </h3>
                         {reminder.isMilestone && (
@@ -222,15 +222,15 @@ export const RemindersTab: React.FC<RemindersTabProps> = ({
                           </span>
                         )}
                         {reminder.relationship && (
-                          <span className="px-1.5 py-0.5 border border-black bg-[#26252b] text-[#a3a4ab] text-[10px] capitalize">
+                          <span className="px-1.5 py-0.5 border border-black bg-[#26252b] text-white text-[10px] capitalize font-medium">
                             {reminder.relationship}
                           </span>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#a3a4ab] mt-1.5 font-pixel">
-                        <span className="flex items-center gap-1 text-[#ffffff]">
-                          <Calendar className="w-3.5 h-3.5 text-[#55ffff]" />
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#27272a] mt-1.5 font-pixel font-medium">
+                        <span className="flex items-center gap-1 text-[#18181b] font-bold">
+                          <Calendar className="w-3.5 h-3.5 text-[#0369a1]" />
                           {new Date(reminder.eventDate + 'T00:00:00').toLocaleDateString('en-US', {
                             weekday: 'short',
                             month: 'short',
@@ -239,8 +239,8 @@ export const RemindersTab: React.FC<RemindersTabProps> = ({
                         </span>
 
                         {reminder.turningAge && (
-                          <span className="text-[#a3a4ab]">
-                            Level <strong>{reminder.turningAge}</strong>
+                          <span className="text-[#27272a]">
+                            Level <strong className="text-[#18181b]">{reminder.turningAge}</strong>
                           </span>
                         )}
 

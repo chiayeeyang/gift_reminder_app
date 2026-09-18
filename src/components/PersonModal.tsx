@@ -210,7 +210,7 @@ export const PersonModal: React.FC<PersonModalProps> = ({
         <div className="flex items-center justify-between px-5 py-3 border-b-2 border-[#3c3d44] bg-[#212026]">
           <div>
             <h2 className="text-sm font-bold text-white mc-text-shadow font-mc">
-              {personToEdit ? `EDIT PLAYER: ${personToEdit.name.toUpperCase()}` : 'SPAWN NEW PLAYER'}
+              {personToEdit ? `EDIT PLAYER: ${personToEdit.name.toUpperCase()}` : 'ADD NEW PLAYER'}
             </h2>
             <p className="text-[11px] text-[#a3a4ab] mt-0.5 font-pixel">
               Configure player birthday, armor sizing, interests, and emerald budget.
@@ -229,7 +229,7 @@ export const PersonModal: React.FC<PersonModalProps> = ({
           {/* Name & Relationship */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+              <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                 Player Name *
               </label>
               <input
@@ -243,7 +243,7 @@ export const PersonModal: React.FC<PersonModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+              <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                 Player Group / Relationship
               </label>
               <select
@@ -405,7 +405,7 @@ export const PersonModal: React.FC<PersonModalProps> = ({
           {/* Color & Annual Budget */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+              <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                 Player Wool Color
               </label>
               <div className="flex items-center gap-2 pt-1">
@@ -424,7 +424,7 @@ export const PersonModal: React.FC<PersonModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+              <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                 Annual Emerald Budget Target ($)
               </label>
               <input
@@ -439,7 +439,7 @@ export const PersonModal: React.FC<PersonModalProps> = ({
 
           {/* Hobbies / Interests */}
           <div>
-            <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+            <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
               Hobbies & Interests (Comma-separated)
             </label>
             <input
@@ -596,7 +596,7 @@ export const PersonModal: React.FC<PersonModalProps> = ({
 
           {/* General Notes */}
           <div>
-            <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+            <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
               General Notes
             </label>
             <textarea
@@ -621,7 +621,7 @@ export const PersonModal: React.FC<PersonModalProps> = ({
               type="submit"
               className="mc-button-emerald px-5 py-1.5 text-xs"
             >
-              {personToEdit ? 'Save Player Changes' : 'Spawn Player'}
+              {personToEdit ? 'Save Player Changes' : 'Add Player'}
             </button>
           </div>
         </form>

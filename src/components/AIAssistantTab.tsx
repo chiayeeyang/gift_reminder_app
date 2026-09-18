@@ -325,10 +325,10 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white mc-text-shadow font-mc">
-                  ENCHANTER BRAINSTORM
+                <h3 className="text-base font-bold text-[#18181b] font-mc">
+                  GIFT WIZARD BRAINSTORM
                 </h3>
-                <p className="text-[11px] text-[#a3a4ab] font-pixel">
+                <p className="text-xs text-[#27272a] font-medium font-pixel">
                   AI suggestions tailored to hobbies, emerald budget, and DIY craft preference.
                 </p>
               </div>
@@ -337,7 +337,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
             <form onSubmit={handleBrainstormSubmit} className="space-y-3.5">
               {/* Select Existing Contact */}
               <div>
-                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                   Target Player
                 </label>
                 <select
@@ -357,7 +357,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
               {selectedPersonId === 'custom' && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">Player Name</label>
+                    <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">Player Name</label>
                     <input
                       type="text"
                       placeholder="e.g. Alex"
@@ -367,7 +367,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">Group</label>
+                    <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">Group</label>
                     <select
                       value={relationship}
                       onChange={(e) => setRelationship(e.target.value)}
@@ -384,7 +384,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
 
               {/* Occasion */}
               <div>
-                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                   Quest Event / Occasion
                 </label>
                 <select
@@ -404,7 +404,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
 
               {/* Interests & Hobbies */}
               <div>
-                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                   Hobbies, Skills & Passions
                 </label>
                 <textarea
@@ -419,7 +419,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
               {/* Budget & Gift Type */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                  <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                     Emerald Budget ($)
                   </label>
                   <input
@@ -542,7 +542,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                           )}
                         </div>
 
-                        <h4 className="text-sm font-bold text-white mt-2 mc-text-shadow font-pixel">{idea.title}</h4>
+                        <h4 className="text-base font-bold text-[#18181b] mt-2 font-pixel">{idea.title}</h4>
                       </div>
 
                       <button
@@ -566,7 +566,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                       </button>
                     </div>
 
-                    <p className="text-xs text-[#d1d5db] font-pixel">{idea.description}</p>
+                    <p className="text-xs text-[#27272a] font-pixel font-medium leading-relaxed">{idea.description}</p>
 
                     {/* Supplies / Sourcing */}
                     {idea.suppliesNeeded && idea.suppliesNeeded.length > 0 && (
@@ -606,10 +606,10 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                 <Wrench className="w-4 h-4 text-[#55ff55]" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white mc-text-shadow font-mc">
+                <h3 className="text-base font-bold text-[#18181b] font-mc">
                   DIY RECIPE BLUEPRINT
                 </h3>
-                <p className="text-[11px] text-[#a3a4ab] font-pixel">
+                <p className="text-xs text-[#27272a] font-medium font-pixel">
                   Turn any handmade concept into ingredients, timeline, and step-by-step instructions.
                 </p>
               </div>
@@ -617,7 +617,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
 
             <form onSubmit={handleCraftPlannerSubmit} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                   Handmade Gift Concept *
                 </label>
                 <input
@@ -631,7 +631,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                   Player Name (Optional)
                 </label>
                 <input
@@ -645,7 +645,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                  <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                     Available Craft Hours
                   </label>
                   <input
@@ -660,7 +660,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">Skill Level</label>
+                  <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">Skill Level</label>
                   <select
                     value={craftSkillLevel}
                     onChange={(e) => setCraftSkillLevel(e.target.value)}
