@@ -41,34 +41,56 @@ app.post('/api/ai/brainstorm', async (req, res) => {
       occasion,
       interests,
       budget,
-      giftPreference, // 'both' | 'handmade' | 'bought'
+      giftPreference, // 'handmade' | 'bought'
       additionalNotes,
     } = req.body;
 
     const ai = getAIClient();
+    const chosenType = giftPreference === 'bought' ? 'bought' : 'handmade';
 
-    const prompt = `You are an expert, thoughtful gift advisor who specializes in both curated bought gifts and heartfelt handmade/DIY projects.
-Generate 5 distinct, personalized gift ideas for:
+    const prompt = `You are an elite, highly personalized gift advisor and creative artisan.
+The user wants ultra-personalized gift recommendations based on the recipient's specific hobbies, preferences, and interests.
+
+INPUT PROFILE:
 - Recipient: ${recipientName || 'a loved one'}
 - Relationship: ${relationship || 'friend/family/partner'}
-- Occasion: ${occasion || 'Birthday/Holiday'}
-- Interests & Hobbies: ${interests || 'General'}
-- Target Budget: ${budget ? `$${budget}` : 'Flexible'}
-- Desired Gift Type: ${giftPreference || 'both bought and handmade'}
-- Special Notes / Quirks: ${additionalNotes || 'None'}
+- Occasion: ${occasion || 'Birthday/Special Occasion'}
+- Hobbies, Skills & Interests: ${interests || 'General hobbies'}
+- Extra Context / Preferences: ${additionalNotes || 'None'}
+- Target Emerald Budget: ${budget ? `$${budget}` : 'Flexible'}
+- Mandatory Gifting Preference: STRICTLY "${chosenType}" (${chosenType === 'handmade' ? '100% Hand-crafted DIY gifts only' : '100% Curated bought gifts to purchase only'}). Every single idea MUST have "type": "${chosenType}".
 
-Return ONLY a valid JSON array of objects (no Markdown backticks, no markdown formatting, pure JSON string) with each object having this exact structure:
+PERSONALIZATION & COMBINATION RULES (MANDATORY):
+1. Extract the distinct factors/elements from the provided hobbies, interests, and preferences (for example, if interests are "Gardening, Coffee", Factor A is "Gardening" and Factor B is "Coffee").
+2. COMBINATION REQUIREMENT:
+   - Generate an idea that directly and creatively COMBINES 2-3 of the input factors together into one cohesive, unique, deeply personalized concept. (e.g. if inputs are Gardening + Coffee, create a gift that merges both, such as a cold-brew botanicals cultivation kit or handmade coffee-ground soil enricher with handcrafted terracotta planter).
+   - Label this idea with "combinationType": "combination" and "inspiredBy": "Combo: [Factor 1] + [Factor 2]".
+3. SEPARATE FOCUS REQUIREMENT:
+   - The REST of the ideas MUST focus individually on the separate factors.
+   - For example, if there are 2 factors (A and B): generate 1 idea combining A & B, plus 1 idea focusing specifically on A, and 1 idea focusing specifically on B (at least 3 ideas total, or 4-5 if expanded).
+   - If there are 3 factors (A, B, C): generate 1 idea combining 2-3 factors, plus ideas dedicated individually to Factor A, Factor B, and Factor C.
+   - Label each separate idea with "combinationType": "single_factor" and "inspiredBy": "Focus: [Factor Name]".
+4. GIFTING PREFERENCE ENFORCEMENT:
+   - If Gifting Preference is "handmade", ALL ideas must be hand-crafted projects with realistic crafting hours, difficulty, step-by-step supplies, and DIY instructions.
+   - If Gifting Preference is "bought", ALL ideas must be commercially available/artisan products to buy with exact shop/brand/marketplace sourcing, craftingHours: 0, and difficulty: "N/A".
+5. COST SENSITIVITY:
+   - Keep estimated costs aligned with the Target Budget (${budget ? `$${budget}` : 'reasonable budget'}).
+
+OUTPUT FORMAT:
+Return ONLY a valid JSON array of objects (pure JSON string, no markdown wrappers, no backticks):
 [
   {
-    "title": "Short catchy title of the gift",
-    "type": "bought" or "handmade",
-    "description": "2-3 sentences describing the gift and why it's deeply thoughtful",
-    "estimatedCost": 25,
-    "craftingHours": 3 (if handmade, number of estimated hours to create; 0 if bought),
-    "difficulty": "Easy" | "Medium" | "Advanced" (if handmade; "N/A" if bought),
-    "suppliesNeeded": ["supply 1", "supply 2"] (for handmade; for bought list key accessories or brands),
-    "whereToFindOrMake": "Where to buy (e.g. Etsy, local bookstore, Amazon) or brief DIY method",
-    "leadTimeAdvice": "Advice on when to start making or order (e.g. 'Start 2 weeks ahead' or 'Order 10 days before')"
+    "title": "Short, creative, specific title of the gift",
+    "type": "${chosenType}",
+    "combinationType": "combination",
+    "inspiredBy": "Combo: [Factor 1] + [Factor 2]",
+    "description": "2-3 vivid sentences describing what this gift is, why it was chosen specifically for them, and how it directly expresses their specific hobbies/preferences.",
+    "estimatedCost": 35,
+    "craftingHours": ${chosenType === 'handmade' ? '3' : '0'},
+    "difficulty": "${chosenType === 'handmade' ? 'Easy' : 'N/A'}",
+    "suppliesNeeded": ["specific item or supply 1", "specific item or supply 2"],
+    "whereToFindOrMake": "Exact marketplace/shops or DIY craft technique",
+    "leadTimeAdvice": "Timeline advice for making or ordering"
   }
 ]`;
 
@@ -78,8 +100,15 @@ Return ONLY a valid JSON array of objects (no Markdown backticks, no markdown fo
     });
 
     const text = response.text || '[]';
-    // Clean potential markdown wrap
-    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    // Clean potential markdown wrap and extract JSON array
+    let cleaned = text.trim();
+    const firstBracket = cleaned.indexOf('[');
+    const lastBracket = cleaned.lastIndexOf(']');
+    if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+      cleaned = cleaned.substring(firstBracket, lastBracket + 1);
+    } else {
+      cleaned = cleaned.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    }
     const ideas = JSON.parse(cleaned);
 
     res.json({ ideas });

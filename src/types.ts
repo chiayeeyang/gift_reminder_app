@@ -159,4 +159,6 @@ export interface AIGeneratedGiftIdea {
   suppliesNeeded?: string[];
   whereToFindOrMake?: string;
   leadTimeAdvice?: string;
+  inspiredBy?: string;
+  combinationType?: 'combination' | 'single_factor';
 }

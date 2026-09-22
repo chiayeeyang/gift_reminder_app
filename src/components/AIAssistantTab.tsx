@@ -13,6 +13,7 @@ import {
   Wrench,
   Check,
   Package,
+  Target,
 } from 'lucide-react';
 
 interface AIAssistantTabProps {
@@ -39,7 +40,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
   const [occasion, setOccasion] = useState('Birthday');
   const [interests, setInterests] = useState(initialInterests);
   const [budget, setBudget] = useState<number | ''>(50);
-  const [giftPreference, setGiftPreference] = useState<'both' | 'handmade' | 'bought'>('both');
+  const [giftPreference, setGiftPreference] = useState<'handmade' | 'bought'>('handmade');
   const [additionalNotes, setAdditionalNotes] = useState('');
 
   // Brainstorm result state
@@ -113,39 +114,154 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
       setBrainstormError(
         err.message || 'Failed to connect to the AI service. Verify your GEMINI_API_KEY secret.'
       );
-      // High quality instant fallback suggestions
-      setBrainstormResults([
-        {
-          title: `Curated ${interests ? interests.split(',')[0] : 'Artisanal'} Gift Basket`,
-          type: 'bought',
-          description: `A thoughtfully assembled collection celebrating ${recipientName || 'your player companion'}'s passion for ${interests || 'rare materials'}. Include specialty provisions and a handwritten parchment scroll.`,
-          estimatedCost: Number(budget) || 45,
-          whereToFindOrMake: 'Local trade post, artisanal market, or Etsy',
-          leadTimeAdvice: 'Order 10 days before to package in a decorative wooden chest.',
-        },
-        {
-          title: `Handcrafted Memory Scrapbook & Keepsake Box`,
+      
+      // Personalized Combinatory Fallback Generator:
+      // Parses hobbies/interests and preferences into separate factors.
+      // Generates 1 combination idea merging 2-3 factors, plus dedicated ideas for each separate factor.
+      const rawFactorList = [
+        ...interests.split(/[,;\n/]+/).map((s) => s.trim()),
+        ...additionalNotes
+          .split(/[,;\n/]+/)
+          .map((s) => s.trim().replace(/^(likes|loves|prefers)\s*:\s*/i, '')),
+      ].filter((s) => s.length > 1);
+
+      const uniqueFactors = Array.from(new Set(rawFactorList));
+      const factorA = uniqueFactors[0] || 'Artisan crafting';
+      const factorB = uniqueFactors[1] || 'Cozy provisions';
+      const factorC = uniqueFactors[2] || (uniqueFactors.length > 2 ? uniqueFactors[2] : null);
+
+      const isHandmade = giftPreference === 'handmade';
+      const userBudget = Number(budget) || 45;
+      const fallbackIdeas: AIGeneratedGiftIdea[] = [];
+
+      if (isHandmade) {
+        // Combination Idea
+        fallbackIdeas.push({
+          title: `Handcrafted ${factorA} & ${factorB} Fusion Project`,
           type: 'handmade',
-          description: `Collect printed screenshots and photos of favorite adventures, concert tickets, notes, and quotes. Bind with linen cord and pressed botanical leaves.`,
-          estimatedCost: 20,
+          combinationType: 'combination',
+          inspiredBy: factorC ? `Combo: ${factorA} + ${factorB} + ${factorC}` : `Combo: ${factorA} + ${factorB}`,
+          description: `A one-of-a-kind DIY creation thoughtfully merging ${recipientName || 'their'}'s passions for ${factorA} and ${factorB}${factorC ? ` alongside elements of ${factorC}` : ''}. Hand-built with custom materials for a deeply personal keepsake.`,
+          estimatedCost: Math.min(userBudget, 40),
           craftingHours: 4,
-          difficulty: 'Easy',
-          suppliesNeeded: ['Kraft paper book', 'Double-sided mounting tape', 'Pressed dried flowers', 'Metallic calligraphy ink'],
-          whereToFindOrMake: 'Craft store or stationery outpost',
-          leadTimeAdvice: 'Start 2 weeks ahead to print photos and gather materials.',
-        },
-        {
-          title: `Custom Embroidered Linen Tote or Apron`,
-          type: 'handmade',
-          description: `A durable pure linen tote embroidered with their player initials, favorite mob icon, or a minimalist flower motif.`,
-          estimatedCost: 18,
-          craftingHours: 3.5,
           difficulty: 'Medium',
-          suppliesNeeded: ['Heavyweight linen blank', 'Embroidery thread skeins', 'Wood hoop and needles'],
-          whereToFindOrMake: 'Textile shop or craft market',
-          leadTimeAdvice: 'Takes about 3-4 hours of relaxed evening crafting.',
-        },
-      ]);
+          suppliesNeeded: [
+            `Core crafting components for ${factorA}`,
+            `Finishing accents inspired by ${factorB}`,
+            'Twine and custom parchment gift card',
+          ],
+          whereToFindOrMake: 'Craft store, local hardware outpost, or home workbench',
+          leadTimeAdvice: 'Start 2 weeks ahead to assemble and seal finishes.',
+        });
+
+        // Dedicated Idea for Factor A
+        fallbackIdeas.push({
+          title: `Bespoke Hand-Finished ${factorA} Piece`,
+          type: 'handmade',
+          combinationType: 'single_factor',
+          inspiredBy: `Focus: ${factorA}`,
+          description: `A dedicated handmade piece tailored specifically to their enjoyment of ${factorA}, featuring custom detailing and practical utility.`,
+          estimatedCost: Math.min(userBudget, 25),
+          craftingHours: 3,
+          difficulty: 'Easy',
+          suppliesNeeded: [`Base blanks for ${factorA}`, 'Finishing oils/varnish', 'Detail carving or stencil kit'],
+          whereToFindOrMake: 'Local maker market or art supply shop',
+          leadTimeAdvice: 'Takes about 2-3 hours of relaxed crafting.',
+        });
+
+        // Dedicated Idea for Factor B
+        fallbackIdeas.push({
+          title: `Custom Artisanal ${factorB} Keepsake`,
+          type: 'handmade',
+          combinationType: 'single_factor',
+          inspiredBy: `Focus: ${factorB}`,
+          description: `Hand-built exclusively around ${factorB}. A personal touch showing deep attention to their distinct interests and aesthetic.`,
+          estimatedCost: Math.min(userBudget, 20),
+          craftingHours: 2.5,
+          difficulty: 'Easy',
+          suppliesNeeded: [`Specialized materials for ${factorB}`, 'Decorative presentation wrap'],
+          whereToFindOrMake: 'Stationery shop or craft studio',
+          leadTimeAdvice: 'Can be completed in an afternoon or weekend session.',
+        });
+
+        // Dedicated Idea for Factor C (if available)
+        if (factorC) {
+          fallbackIdeas.push({
+            title: `Handmade ${factorC} Collector Accessory`,
+            type: 'handmade',
+            combinationType: 'single_factor',
+            inspiredBy: `Focus: ${factorC}`,
+            description: `A crafted organizer or bespoke accessory designed specifically to complement their enthusiasm for ${factorC}.`,
+            estimatedCost: Math.min(userBudget, 30),
+            craftingHours: 3.5,
+            difficulty: 'Medium',
+            suppliesNeeded: [`Raw materials for ${factorC}`, 'Fasteners / stitching kit'],
+            whereToFindOrMake: 'Fabric depot or woodwork supply shop',
+            leadTimeAdvice: 'Start 10 days in advance.',
+          });
+        }
+      } else {
+        // Bought (Curated Trade Items)
+        // Combination Idea
+        fallbackIdeas.push({
+          title: `Curated ${factorA} + ${factorB} Specialist Chest`,
+          type: 'bought',
+          combinationType: 'combination',
+          inspiredBy: factorC ? `Combo: ${factorA} + ${factorB} + ${factorC}` : `Combo: ${factorA} + ${factorB}`,
+          description: `An artisan bundle seamlessly pairing boutique ${factorA} goods with premium ${factorB} essentials. Bridges multiple facets of their personality in one cohesive gift package.`,
+          estimatedCost: userBudget,
+          craftingHours: 0,
+          difficulty: 'N/A',
+          suppliesNeeded: [`Boutique ${factorA} provision`, `Premium ${factorB} accessory`, 'Gift packaging box'],
+          whereToFindOrMake: 'Etsy, boutique indie merchants, or curated maker shops',
+          leadTimeAdvice: 'Order 7-10 days prior to allow for bundled delivery.',
+        });
+
+        // Dedicated Idea for Factor A
+        fallbackIdeas.push({
+          title: `Premium Artisanal ${factorA} Edition`,
+          type: 'bought',
+          combinationType: 'single_factor',
+          inspiredBy: `Focus: ${factorA}`,
+          description: `A top-rated, thoughtfully sourced specialty gift focused 100% on ${factorA}. Designed for enthusiasts who appreciate high craftsmanship.`,
+          estimatedCost: Math.round(userBudget * 0.75),
+          craftingHours: 0,
+          difficulty: 'N/A',
+          whereToFindOrMake: `Specialized ${factorA} boutique or official flagship store`,
+          leadTimeAdvice: 'Order 5-7 business days in advance.',
+        });
+
+        // Dedicated Idea for Factor B
+        fallbackIdeas.push({
+          title: `Independent Maker ${factorB} Discovery`,
+          type: 'bought',
+          combinationType: 'single_factor',
+          inspiredBy: `Focus: ${factorB}`,
+          description: `A unique, high-character discovery tailored around ${factorB}. A delightful surprise that avoids generic big-box store items.`,
+          estimatedCost: Math.round(userBudget * 0.5),
+          craftingHours: 0,
+          difficulty: 'N/A',
+          whereToFindOrMake: `Local indie retailer or artisan marketplace for ${factorB}`,
+          leadTimeAdvice: 'Order 3-5 days ahead.',
+        });
+
+        if (factorC) {
+          fallbackIdeas.push({
+            title: `Bespoke ${factorC} Companion Gift`,
+            type: 'bought',
+            combinationType: 'single_factor',
+            inspiredBy: `Focus: ${factorC}`,
+            description: `A dedicated luxury or practical upgrade centered entirely on their love for ${factorC}.`,
+            estimatedCost: Math.round(userBudget * 0.6),
+            craftingHours: 0,
+            difficulty: 'N/A',
+            whereToFindOrMake: `Specialty retail shop for ${factorC}`,
+            leadTimeAdvice: 'Order 4-6 days ahead.',
+          });
+        }
+      }
+
+      setBrainstormResults(fallbackIdeas);
     } finally {
       setIsBrainstorming(false);
     }
@@ -329,7 +445,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                   GIFT WIZARD BRAINSTORM
                 </h3>
                 <p className="text-xs text-[#27272a] font-medium font-pixel">
-                  AI suggestions tailored to hobbies, emerald budget, and DIY craft preference.
+                  Forges multi-factor fusion ideas alongside dedicated single-interest concepts.
                 </p>
               </div>
             </div>
@@ -431,27 +547,28 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">Loot Preference</label>
+                  <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
+                    Gifting Preferences
+                  </label>
                   <select
                     value={giftPreference}
-                    onChange={(e) => setGiftPreference(e.target.value as any)}
+                    onChange={(e) => setGiftPreference(e.target.value as 'handmade' | 'bought')}
                     className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
                   >
-                    <option value="both">Both Trade & DIY Craft</option>
-                    <option value="handmade">Handmade Craft Only</option>
-                    <option value="bought">Villager Trade Only</option>
+                    <option value="handmade">Hand-crafted</option>
+                    <option value="bought">Bought</option>
                   </select>
                 </div>
               </div>
 
               {/* Notes */}
               <div>
-                <label className="block text-xs font-pixel text-[#a3a4ab] mb-1">
+                <label className="block text-xs font-pixel text-[#18181b] font-bold mb-1">
                   Extra Context / Preferences
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Minimalist, no inventory clutter"
+                  placeholder="e.g. Minimalist, favorite aesthetic, dislikes clutter"
                   value={additionalNotes}
                   onChange={(e) => setAdditionalNotes(e.target.value)}
                   className="w-full mc-input px-3 py-1.5 text-xs font-pixel"
@@ -471,7 +588,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    Craft 5 Thoughtful Ideas
+                    Forge Personalized Ideas
                   </>
                 )}
               </button>
@@ -485,8 +602,8 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                 <AlertCircle className="w-4 h-4 text-[#ff5555] shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-white">Notice:</span> {brainstormError}
-                  <span className="block mt-0.5 text-[#a3a4ab]">
-                    Displaying curated idea templates below.
+                  <span className="block mt-0.5 text-stone-300">
+                    Displaying personalized combination & focus concepts below.
                   </span>
                 </div>
               </div>
@@ -494,13 +611,12 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
 
             {brainstormResults.length === 0 && !isBrainstorming ? (
               <div className="p-12 text-center mc-panel-dark border-2 border-black">
-                <Lightbulb className="w-10 h-10 text-[#555555] mx-auto mb-3" />
+                <Lightbulb className="w-10 h-10 text-stone-500 mx-auto mb-3" />
                 <h4 className="text-sm font-bold text-white mc-text-shadow font-mc">
                   READY TO BRAINSTORM GIFTS
                 </h4>
-                <p className="text-xs text-[#a3a4ab] max-w-sm mx-auto mt-1 font-pixel">
-                  Enter your recipient&apos;s interests on the left and our AI wizard will propose
-                  a tailored mix of store-bought trades and meaningful handmade recipes.
+                <p className="text-xs text-stone-300 max-w-sm mx-auto mt-1 font-pixel font-medium">
+                  Enter your recipient&apos;s hobbies, preferences & interests on the left. The wizard will forge a multi-factor combination idea alongside focused single-interest concepts.
                 </p>
               </div>
             ) : (
@@ -514,15 +630,25 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                     className="p-4 mc-panel border-2 border-black space-y-3"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2">
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {idea.combinationType === 'combination' ? (
+                            <span className="px-2 py-0.5 text-xs font-pixel bg-[#581c87] text-[#f5d0fe] border border-black flex items-center gap-1 font-bold shadow-[1px_1px_0_#000]">
+                              <Sparkles className="w-3 h-3 text-[#f0abfc]" /> {idea.inspiredBy || 'COMBO FUSION'}
+                            </span>
+                          ) : idea.inspiredBy ? (
+                            <span className="px-2 py-0.5 text-xs font-pixel bg-[#1e293b] text-[#93c5fd] border border-black flex items-center gap-1 font-bold">
+                              <Target className="w-3 h-3 text-[#60a5fa]" /> {idea.inspiredBy}
+                            </span>
+                          ) : null}
+
                           {isHandmade ? (
-                            <span className="px-2 py-0.5 text-xs font-pixel bg-[#2b7730] text-[#55ff55] border border-black flex items-center gap-1 mc-text-shadow">
-                              <Sparkles className="w-3 h-3 text-[#55ff55]" /> CRAFTED DIY
+                            <span className="px-2 py-0.5 text-xs font-pixel bg-[#2b7730] text-[#55ff55] border border-black flex items-center gap-1 mc-text-shadow font-bold">
+                              <Sparkles className="w-3 h-3 text-[#55ff55]" /> HAND-CRAFTED
                             </span>
                           ) : (
                             <span className="px-2 py-0.5 text-xs font-pixel bg-[#d97706] text-black border border-black flex items-center gap-1 font-bold">
-                              <Tag className="w-3 h-3 text-black" /> TRADE ITEM
+                              <Tag className="w-3 h-3 text-black" /> BOUGHT
                             </span>
                           )}
 
@@ -531,8 +657,8 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                           </span>
 
                           {isHandmade && idea.craftingHours && (
-                            <span className="text-[#a3a4ab] text-xs flex items-center gap-1 font-pixel">
-                              <Clock className="w-3 h-3 text-[#55ffff]" /> ~{idea.craftingHours}h crafting
+                            <span className="text-[#18181b] text-xs flex items-center gap-1 font-pixel font-bold">
+                              <Clock className="w-3 h-3 text-[#0284c7]" /> ~{idea.craftingHours}h crafting
                             </span>
                           )}
                           {isHandmade && idea.difficulty && (
@@ -542,7 +668,7 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                           )}
                         </div>
 
-                        <h4 className="text-base font-bold text-[#18181b] mt-2 font-pixel">{idea.title}</h4>
+                        <h4 className="text-base font-bold text-[#18181b] font-pixel">{idea.title}</h4>
                       </div>
 
                       <button
@@ -571,14 +697,18 @@ export const AIAssistantTab: React.FC<AIAssistantTabProps> = ({
                     {/* Supplies / Sourcing */}
                     {idea.suppliesNeeded && idea.suppliesNeeded.length > 0 && (
                       <div className="text-xs mc-panel-dark p-2 border border-black">
-                        <span className="font-mc text-[9px] text-[#ffea75]">MATERIALS NEEDED: </span>
+                        <span className="font-mc text-[9px] text-[#ffea75]">
+                          {isHandmade ? 'MATERIALS NEEDED: ' : 'SOURCING & KEY SPECS: '}
+                        </span>
                         <span className="text-white">{idea.suppliesNeeded.join(', ')}</span>
                       </div>
                     )}
 
-                    {idea.whereToFindOrMake && !idea.suppliesNeeded && (
-                      <div className="text-xs text-[#a3a4ab]">
-                        <span className="text-white">Where to find: </span>
+                    {idea.whereToFindOrMake && (
+                      <div className="text-xs text-[#27272a] font-pixel font-medium">
+                        <strong className="text-[#18181b]">
+                          {isHandmade ? 'Crafting workbench / techniques: ' : 'Where to buy: '}
+                        </strong>
                         {idea.whereToFindOrMake}
                       </div>
                     )}
